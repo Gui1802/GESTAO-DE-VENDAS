@@ -204,14 +204,17 @@ td.right,th.right{text-align:right}
       <div class="card">
         <h2>Configurações</h2>
         <div class="row">
-          <button class="btn primary" id="btnExport">Exportar backup</button>
-          <label class="btn secondary" for="fileImport" style="cursor:pointer">Importar backup</label>
+          <button class="btn primary" id="btnExport">Exportar backup (JSON)</button>
+          <label class="btn secondary" for="fileImport" style="cursor:pointer">Importar backup (JSON)</label>
           <input id="fileImport" type="file" accept="application/json" style="display:none">
+        </div>
+        <div class="row">
+          <button class="btn secondary" id="btnCSV">Exportar CSV (carros, gastos, vendas, anotações)</button>
         </div>
         <div class="row">
           <span class="badge">Último backup: <b id="lastBackup">—</b></span>
         </div>
-        <div class="muted">O backup inclui: carros, gastos, vendas e anotações.</div>
+        <div class="muted">O backup JSON inclui: carros, gastos, vendas e anotações. O CSV exporta planilhas separadas.</div>
       </div>
     </section>
   </div>
@@ -309,7 +312,7 @@ const esc=s=> String(s??'').replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':
 const store=(()=>{try{const k='__t__';localStorage.setItem(k,'1');localStorage.removeItem(k);return localStorage;}catch(e){const m={};return{getItem:k=>m[k]||null,setItem:(k,v)=>m[k]=String(v),removeItem:k=>delete m[k]};}})();
 
 /* ===== Estado ===== */
-const KEY='cars_v21', KEYN='notes_v21', KEYBK='backup_info_v21';
+const KEY='cars_v22', KEYN='notes_v22', KEYBK='backup_info_v22';
 let cars=JSON.parse(store.getItem(KEY)||'[]');
 let notes=JSON.parse(store.getItem(KEYN)||'[]');
 const save = ()=>{ try{store.setItem(KEY,JSON.stringify(cars));}catch(e){} };
@@ -326,7 +329,7 @@ function setTab(id){
 }
 $$('.tab').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
 
-/* ===== Catálogo (será ordenado ao preencher) ===== */
+/* ===== Catálogo (ordem alfabética) ===== */
 const CATALOG={
  'Chevrolet':['Onix','Onix Plus','Tracker','Spin','S10','Montana','Cruze','Equinox','Trailblazer'],
  'Volkswagen':['Gol','Polo','Virtus','Nivus','T-Cross','Taos','Saveiro','Amarok','Jetta'],
@@ -428,7 +431,7 @@ const gastoHTML = (g,i) => `
       <span class="muted">PAGO:</span>
       <button class="pill ok ${g.pago?'on':''}" data-pay="sim">Sim</button>
       <button class="pill bad ${g.pago===false?'on':''}" data-pay="nao">Não</button>
-      <b>${BRL(g.valor)}</b>
+      <b>${(+g.valor||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</b>
       <button class="btn tiny bad" data-del>🗑️</button>
     </div>
   </div>`;
@@ -602,7 +605,7 @@ $('#mSalvar').onclick=()=>{
           id:uid(), placa:tp, marca:tm, modelo:tmo, versao:tv, cor:tc,
           anoFab:tf, anoMod:tm2, km:tkm, valorCompra:tval, fipe:0,
           gastos:[], precoAlvo:0, venda:null,
-          dataCompra: dataVenda  /* <- data da compra = data da negociação */
+          dataCompra: dataVenda  /* data da compra = data da negociação */
         });
       }
     }
@@ -811,8 +814,78 @@ function refreshBackupLabel(){
   const info = JSON.parse(store.getItem(KEYBK) || 'null');
   $('#lastBackup').textContent = info?.when || '—';
 }
+
+// parse de dinheiro robusto p/ import JSON antigo
+function parseMoney(x){
+  if (x == null || x === '') return 0;
+  if (typeof x === 'number' && isFinite(x)) return x;
+  let s = String(x).trim();
+  s = s.replace(/[^\d,.\-]/g,'');
+  if (s.includes(',') && s.lastIndexOf(',') > s.lastIndexOf('.')) {
+    s = s.replace(/\./g,'').replace(',', '.');
+  }
+  const n = parseFloat(s);
+  return isFinite(n) ? n : 0;
+}
+function normalizeCar(raw){
+  const c = Object.assign({
+    id: uid(),
+    placa:'', marca:'', modelo:'', versao:'', cor:'',
+    anoFab:'', anoMod:'', km:0,
+    valorCompra:0, fipe:0, precoAlvo:0,
+    gastos:[], venda:null, dataCompra: null
+  }, raw || {});
+  c.km = parseInt(c.km || 0, 10) || 0;
+  c.valorCompra = parseMoney(c.valorCompra);
+  c.fipe        = parseMoney(c.fipe);
+  c.precoAlvo   = parseMoney(c.precoAlvo);
+  if (!Array.isArray(c.gastos)) c.gastos = [];
+  c.gastos = c.gastos.map(g => ({
+    desc: (g && g.desc) ? String(g.desc) : 'GASTO',
+    valor: parseMoney(g && g.valor),
+    data: (g && g.data) ? String(g.data) : '',
+    pago: (g && typeof g.pago === 'boolean') ? g.pago : (g && g.pago === 'sim' ? true : (g && g.pago === 'nao' ? false : null))
+  }));
+  if (c.venda) {
+    c.venda = Object.assign({
+      comprador:'', vendedor:'', valorVenda:0, comissao:0, data:'', obs:'', doc:''
+    }, c.venda);
+    c.venda.valorVenda = parseMoney(c.venda.valorVenda);
+    c.venda.comissao   = parseMoney(c.venda.comissao);
+    if (c.venda.trade) {
+      c.venda.trade = {
+        placa: String(c.venda.trade.placa || ''),
+        carro: String(c.venda.trade.carro || ''),
+        valor: parseMoney(c.venda.trade.valor)
+      };
+    }
+  }
+  if (!c.dataCompra || isNaN(new Date(c.dataCompra).getTime())) {
+    const cand = raw?.createdAt || raw?.created || raw?.data || null;
+    c.dataCompra = (cand && !isNaN(new Date(cand).getTime())) ? new Date(cand).toISOString().slice(0,10)
+                                                               : today();
+  }
+  return c;
+}
+function extractPayload(obj){
+  if (!obj) return {cars:[], notes:[]};
+  if (Array.isArray(obj)) return {cars: obj, notes: []};
+  if (Array.isArray(obj.cars) || Array.isArray(obj.notes)) return {cars: obj.cars || [], notes: obj.notes || []};
+  if (obj.data && (Array.isArray(obj.data.cars) || Array.isArray(obj.data.notes)))
+    return {cars: obj.data.cars || [], notes: obj.data.notes || []};
+  if (Array.isArray(obj.cars_v22) || Array.isArray(obj.notes_v22))
+    return {cars: obj.cars_v22 || [], notes: obj.notes_v22 || []};
+  try{
+    const maybeCars = obj['cars_v22'] || obj['cars_v21'] || obj['cars_clean_v20'] || obj['cars'] || [];
+    const maybeNotes= obj['notes_v22']|| obj['notes_v21']|| obj['notes_clean_v20']|| obj['notes']|| [];
+    if (Array.isArray(maybeCars) || Array.isArray(maybeNotes))
+      return {cars: Array.isArray(maybeCars)? maybeCars: [], notes: Array.isArray(maybeNotes)? maybeNotes: []};
+  }catch(e){}
+  return {cars:[], notes:[]};
+}
+
 $('#btnExport').onclick=()=>{
-  const payload = { version:'v21', when: nowStr(), cars, notes };
+  const payload = { version:'v22', when: nowStr(), cars, notes };
   const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -827,26 +900,88 @@ $('#fileImport').addEventListener('change', (e)=>{
   const reader = new FileReader();
   reader.onload = () => {
     try{
-      const obj = JSON.parse(reader.result);
-      if(!obj || (!Array.isArray(obj.cars) && !Array.isArray(obj.notes))) throw new Error('Arquivo inválido.');
-      cars = Array.isArray(obj.cars) ? obj.cars : [];
-      notes = Array.isArray(obj.notes) ? obj.notes : [];
+      const raw = JSON.parse(reader.result);
+      const {cars: cIn, notes: nIn} = extractPayload(raw);
+      const normCars = (Array.isArray(cIn) ? cIn : []).map(normalizeCar);
+      const normNotes= (Array.isArray(nIn) ? nIn : []).map(n => ({
+        id: n?.id || uid(),
+        titulo: String(n?.titulo || ''),
+        obs: String(n?.obs || '')
+      }));
+      cars = normCars;
+      notes = normNotes;
       save(); saveN();
       alert('Backup importado com sucesso!');
       renderCars(); renderSold(); renderNotes(); setTab('cars');
     }catch(err){
-      alert('Falha ao importar: ' + err.message);
+      console.error(err);
+      alert('Falha ao importar: arquivo inválido ou corrompido.');
     }
     e.target.value='';
   };
   reader.readAsText(f);
 });
 
+/* ===== Exportar CSV ===== */
+function csvEscape(v, sep){
+  if (v==null) v='';
+  let s = String(v);
+  if (s.includes('"')) s = s.replace(/"/g,'""');
+  const mustQuote = s.includes('"') || s.includes('\n') || s.includes(sep);
+  return mustQuote ? `"${s}"` : s;
+}
+function downloadCSV(filename, headers, rows, sep=';'){
+  const head = headers.map(h=>csvEscape(h,sep)).join(sep);
+  const body = rows.map(r=>r.map(v=>csvEscape(v,sep)).join(sep)).join('\n');
+  const blob = new Blob([head+'\n'+body], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+$('#btnCSV').onclick=()=>{
+  // CARROS
+  const carHeaders = ['id','placa','marca','modelo','versao','cor','anoFab','anoMod','km','valorCompra','fipe','precoAlvo','dataCompra','status','totalGastos','investido'];
+  const carRows = cars.map(c=>{
+    const totalG = (c.gastos||[]).reduce((s,g)=>s+(+g.valor||0),0);
+    const inv = (+c.valorCompra||0)+totalG;
+    return [c.id,c.placa,c.marca,c.modelo,c.versao,c.cor,c.anoFab,c.anoMod,(+c.km||0),(+c.valorCompra||0),(+c.fipe||0),(+c.precoAlvo||0),c.dataCompra,(c.venda?'vendido':'estoque'),totalG,inv];
+  });
+  downloadCSV(`carros-${today()}.csv`,carHeaders,carRows);
+
+  // GASTOS
+  const gHeaders = ['carId','placa','descricao','valor','data','pago'];
+  const gRows = [];
+  cars.forEach(c=>{
+    (c.gastos||[]).forEach(g=>{
+      gRows.push([c.id,c.placa,g.desc,(+g.valor||0),g.data,(g.pago===true?'sim':(g.pago===false?'nao':''))]);
+    });
+  });
+  downloadCSV(`gastos-${today()}.csv`,gHeaders,gRows);
+
+  // VENDAS
+  const vHeaders = ['carId','placa','veiculo','valorVenda','comissao','data','comprador','vendedor','obs','doc','tradePlaca','tradeCarro','tradeValor','diferencaValor'];
+  const vRows = [];
+  cars.forEach(c=>{
+    if(c.venda){
+      const v=c.venda, dif = v.trade ? ((+v.valorVenda||0) - (+v.trade.valor||0)) : '';
+      vRows.push([c.id,c.placa,`${c.marca} ${c.modelo}`,(+v.valorVenda||0),(+v.comissao||0),v.data,v.comprador,v.vendedor,v.obs||'',v.doc||'',(v.trade?.placa||''),(v.trade?.carro||''),(+v.trade?.valor||0),dif]);
+    }
+  });
+  downloadCSV(`vendas-${today()}.csv`,vHeaders,vRows);
+
+  // ANOTAÇÕES
+  const nHeaders = ['id','titulo','observacao'];
+  const nRows = notes.map(n=>[n.id,n.titulo||'',(n.obs||'')]);
+  downloadCSV(`anotacoes-${today()}.csv`,nHeaders,nRows);
+  alert('CSV exportado (arquivos baixados).');
+};
+
 /* ===== Init ===== */
 fillMarcas($('#iMarca')); fillModelos($('#iModelo'),'');
 fillYears($('#iAnoFab'),'Ano fabricação'); fillYears($('#iAnoMod'),'Ano modelo');
 $('#iMarca').onchange=()=>fillModelos($('#iModelo'),$('#iMarca').value);
-renderCars(); renderSold(); refreshBackupLabel();
+renderCars(); renderSold();
 
 })();
 </script>
