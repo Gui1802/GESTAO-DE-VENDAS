@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>Gestão de Carros</title>
-<meta name="theme-color" content="#0f1220">
-<style>
+  <meta charset="utf-8"/>
+  <!-- ZOOM TRAVADO EM 75% -->
+  <meta name="viewport" content="width=device-width, initial-scale=0.75, maximum-scale=0.75, user-scalable=no, viewport-fit=cover"/>
+  <title>Gestão de Carros</title>
+  <meta name="theme-color" content="#0f1220">
+  <style>
 :root{
   --bg:#0f1220; --panel:#14192b; --card:#171e33; --line:#26304a;
   --fg:#e9eeff; --mut:#9fb0d4; --chip:#0b1120;
@@ -17,18 +18,23 @@ html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
 .header{position:sticky;top:0;z-index:20;background:#0c1120;border-bottom:1px solid var(--line);padding:12px 16px;text-align:center;font-weight:800}
 .wrapper{max-width:1120px;margin:0 auto;padding:16px}
+
+/* TABS */
 .tabs{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;border-bottom:1px solid var(--line);padding:10px;background:#0e152a}
 .tab{appearance:none;border:1px solid var(--line);background:#1a2340;color:#eaf0ff;border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:800;min-height:40px}
 .tab.active{background:var(--pri);color:var(--pri-ink);border-color:transparent}
+
+/* SEÇÕES / CARDS */
 .section{display:none}.section.active{display:block}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:16px 0;box-shadow:0 10px 28px rgba(0,0,0,.35)}
 .card h2,.card h3{margin:0 0 10px}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px}
-input,select,textarea{flex:1;min-width:220px;background:#0b1120;color:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:16px;min-height:44px;outline:0}
+input,select,textarea{flex:1;min-width:220px;background:#0b1120;color:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:16px;min-height:44px;outline:0;text-transform:uppercase}
 input::placeholder,textarea::placeholder{color:#7f8aa3}
 select option{background:#ffffff;color:#0b1018}
 .upper{text-transform:uppercase}
 
+/* BOTÕES */
 .btn{appearance:none;border:none;border-radius:12px;cursor:pointer;min-height:36px;padding:10px 12px;font-weight:800}
 .btn.primary{background:var(--pri);color:var(--pri-ink)}
 .btn.secondary{background:#1a2340;color:#eaf0ff;border:1px solid var(--line)}
@@ -38,7 +44,7 @@ select option{background:#ffffff;color:#0b1018}
 .badge{display:inline-block;background:#0e152a;border:1px solid var(--line);border-radius:999px;padding:6px 10px}
 .muted{color:var(--mut);font-size:12px}
 
-/* tables */
+/* TABELAS */
 table{width:100%;border-collapse:separate;border-spacing:0 10px}
 thead th{font-size:11px;letter-spacing:.35px;text-transform:uppercase;color:#bac7df;text-align:left;padding:0 10px}
 tbody td{background:#0e152a;border:1px solid var(--line);padding:10px;vertical-align:top}
@@ -50,6 +56,7 @@ td.right,th.right{text-align:right}
 .veh{font-weight:800}
 .sub{display:block;color:var(--mut);font-size:12px;margin-top:2px}
 
+/* EXPAND */
 .expand{background:#0b1120;border-top:1px solid var(--line)}
 .expand .wrap{padding:12px}
 .grid{display:grid;gap:10px}
@@ -58,24 +65,24 @@ td.right,th.right{text-align:right}
 .kv{display:flex;justify-content:space-between;gap:12px;background:#0f1a33;border:1px solid var(--line);border-radius:12px;padding:10px}
 .kv .val{font-weight:800}
 
-/* gastos */
+/* GASTOS */
 .gastos-box{margin-top:12px;border:1px dashed var(--line);border-radius:12px;background:#0f1a33}
 .gastos-box .gx{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px}
 .gastos-list{padding:8px 10px;border-top:1px solid var(--line);max-height:220px;overflow:auto;-webkit-overflow-scrolling:touch}
 .gasto-item{display:flex;justify-content:space-between;gap:10px;background:#0b1120;border:1px solid var(--line);border-radius:10px;padding:8px;margin-bottom:8px}
 .gasto-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 
-/* PAGO toggle */
+/* PAGO: Sim/Não (neutro até clicar) */
 .pill{border:1px solid var(--line);background:#1a2340;color:#eaf0ff;border-radius:999px;padding:6px 10px;font-weight:800}
 .pill.ok.on{background:var(--ok);color:#062111;border-color:transparent}
 .pill.bad.on{background:var(--bad);color:#fff;border-color:transparent}
 
-/* Documento buttons (neutros até clicar) */
+/* Documento: Certo/Falta (neutro até clicar) */
 .docbtn{border:1px solid var(--line);background:#1a2340;color:#eaf0ff;border-radius:999px;padding:6px 10px;font-weight:800}
 .docbtn.on.ok{background:var(--ok);color:#062111;border-color:transparent}
 .docbtn.on.bad{background:var(--bad);color:#fff;border-color:transparent}
 
-/* Modal */
+/* MODAIS */
 .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:50}
 .modal.active{display:flex}
 .dialog{background:#0e152a;border:1px solid var(--line);border-radius:16px;max-width:980px;width:96%;padding:0;display:flex;flex-direction:column;max-height:88vh;overflow:hidden}
@@ -83,13 +90,14 @@ td.right,th.right{text-align:right}
 .dialog .scroll{padding:16px;overflow:auto;-webkit-overflow-scrolling:touch}
 .x{background:transparent;border:none;color:#b6c1d4;font-size:22px;cursor:pointer}
 
-/* troca row alinhada */
+/* TROCA row alinhada */
 .swapbar{display:flex;gap:10px;align-items:center;margin-top:8px}
 .swapbar .note{color:var(--mut);font-size:12px}
 
+/* RELATÓRIO */
 .months{display:flex;flex-wrap:wrap;gap:8px}
 .info-line{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-</style>
+  </style>
 </head>
 <body>
   <div class="header">Gestão de Compras e Vendas de Carros</div>
@@ -269,20 +277,33 @@ const BRL=v=> new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).f
 const INT=v=> new Intl.NumberFormat('pt-BR').format(+v||0);
 const today=()=> new Date().toISOString().slice(0,10);
 const uid=()=> Math.random().toString(36).slice(2)+Date.now().toString(36);
-const esc=s=> String(s??'').replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+const esc=s=> String(s??'').replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
 const store=(()=>{try{const k='__t__';localStorage.setItem(k,'1');localStorage.removeItem(k);return localStorage;}catch(e){const m={};return{getItem:k=>m[k]||null,setItem:(k,v)=>m[k]=String(v),removeItem:k=>delete m[k]};}})();
 
-document.addEventListener('input',e=>{ if(e.target.classList && e.target.classList.contains('upper')){ const p=e.target.selectionStart; e.target.value=e.target.value.toUpperCase(); e.target.setSelectionRange(p,p); } });
+/* Maiúsculas preservando cursor */
+document.addEventListener('input',e=>{
+  const el=e.target;
+  if(!['INPUT','TEXTAREA'].includes(el.tagName)) return;
+  const st=el.selectionStart, en=el.selectionEnd;
+  el.value = el.value.toUpperCase();
+  if(st!=null && en!=null) el.setSelectionRange(st,en);
+});
 
 /* ===== Estado ===== */
 const KEY='cars_clean_v19', KEYN='notes_clean_v19';
 let cars=JSON.parse(store.getItem(KEY)||'[]');
 let notes=JSON.parse(store.getItem(KEYN)||'[]');
-const save=()=>{try{store.setItem(KEY,JSON.stringify(cars));}catch(e){}};
-const saveN=()=>{try{store.setItem(KEYN,JSON.stringify(notes));}catch(e){}};
+const save = ()=>{ try{store.setItem(KEY,JSON.stringify(cars));}catch(e){} };
+const saveN= ()=>{ try{store.setItem(KEYN,JSON.stringify(notes));}catch(e){} };
 
 /* ===== Tabs ===== */
-function setTab(id){ $$('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===id)); $$('.section').forEach(s=>s.classList.toggle('active',s.id===id)); if(id==='cars') renderCars(); if(id==='sold') renderSold(); if(id==='notes') renderNotes(); }
+function setTab(id){
+  $$('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));
+  $$('.section').forEach(s=>s.classList.toggle('active',s.id===id));
+  if(id==='cars') renderCars();
+  if(id==='sold') renderSold();
+  if(id==='notes') renderNotes();
+}
 $$('.tab').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
 
 /* ===== Catálogo ===== */
@@ -311,9 +332,20 @@ const CATALOG={
  'RAM':['1500','2500','3500'],
  'MINI':['Cooper Hatch','Countryman']
 };
-function fillYears(sel,ph){ sel.innerHTML='<option value=\"\">'+ph+'</option>'+Array.from({length:28},(_,i)=>2005+i).map(y=>`<option>${y}</option>`).join(''); }
-function fillMarcas(sel){ sel.innerHTML='<option value=\"\">Marca</option>'+Object.keys(CATALOG).map(m=>`<option>${m}</option>`).join(''); }
-function fillModelos(sel,marca,ph='Modelo'){ if(!marca){ sel.innerHTML='<option>Selecione a marca primeiro</option>'; sel.disabled=true; return;} sel.disabled=false; sel.innerHTML='<option value=\"\">'+ph+'</option>'+CATALOG[marca].map(m=>`<option>${m}</option>`).join(''); }
+function fillYears(sel,ph){
+  sel.innerHTML = '<option value="">' + ph + '</option>' +
+    Array.from({length:28},(_,i)=>2005+i).map(y=>`<option>${y}</option>`).join('');
+}
+function fillMarcas(sel){
+  sel.innerHTML = '<option value="">Marca</option>' +
+    Object.keys(CATALOG).map(m=>`<option>${m}</option>`).join('');
+}
+function fillModelos(sel,marca,ph='Modelo'){
+  if(!marca){ sel.innerHTML='<option>Selecione a marca primeiro</option>'; sel.disabled=true; return; }
+  sel.disabled=false;
+  sel.innerHTML = '<option value="">' + ph + '</option>' +
+    CATALOG[marca].map(m=>`<option>${m}</option>`).join('');
+}
 
 /* ===== Calculadora ===== */
 function calc(){
@@ -329,7 +361,8 @@ function calc(){
   $('#rLucroFipe').textContent=BRL(lucro)+' ('+pctL.toFixed(2).replace('.',',')+'%)';
   $('#rCompraMax30').textContent=BRL(compraMax30);
 }
-$('#btnCalc').onclick=calc; ['#cCompra','#cFipe','#cGastos'].forEach(s=>($(s).oninput=calc));
+$('#btnCalc').onclick=calc;
+['#cCompra','#cFipe','#cGastos'].forEach(s=>($(s).oninput=calc));
 
 /* ===== Adicionar ===== */
 $('#btnAdd').onclick=()=>{
@@ -343,7 +376,9 @@ $('#btnAdd').onclick=()=>{
     fipe:+($('#iFipe').value||0),
     gastos:[], precoAlvo:0, venda:null
   };
-  if(!c.placa||!c.marca||!c.modelo||!c.anoFab||!c.anoMod||!$('#iKm').value||!$('#iValor').value||!c.cor){ alert('Preencha todos os campos.'); return;}
+  if(!c.placa||!c.marca||!c.modelo||!c.anoFab||!c.anoMod||!$('#iKm').value||!$('#iValor').value||!c.cor){
+    alert('Preencha todos os campos.'); return;
+  }
   if(+c.anoMod < +c.anoFab){ alert('Ano modelo não pode ser menor que ano fabricação.'); return; }
   if(cars.some(x=>x.placa===c.placa && !x.venda)){ alert('Placa já cadastrada.'); return; }
   cars.unshift(c); save();
@@ -479,7 +514,14 @@ function openSell(id){
   $('#modal').classList.add('active');
 }
 $('#mClose').onclick=()=>$('#modal').classList.remove('active');
-$('#mTroca').onchange=function(){ $('#mTrocaBox').style.display=this.checked?'block':'none'; if(this.checked){ fillMarcas($('#tMarca')); fillModelos($('#tModelo'),''); fillYears($('#tFab'),'Ano Fab.'); fillYears($('#tMod'),'Ano Mod.'); $('#tMarca').onchange=()=>fillModelos($('#tModelo'),$('#tMarca').value); } };
+$('#mTroca').onchange=function(){
+  $('#mTrocaBox').style.display=this.checked?'block':'none';
+  if(this.checked){
+    fillMarcas($('#tMarca')); fillModelos($('#tModelo'),'');
+    fillYears($('#tFab'),'Ano Fab.'); fillYears($('#tMod'),'Ano Mod.');
+    $('#tMarca').onchange=()=>fillModelos($('#tModelo'),$('#tMarca').value);
+  }
+};
 function recomputeModal(){
   const c=cars[sellingIndex]; if(!c) return;
   const inv=invested(c)+(+$('#mComissao').value||0);
@@ -499,7 +541,15 @@ $('#mValor').oninput=recomputeModal; $('#mComissao').oninput=recomputeModal; $('
 
 $('#mSalvar').onclick=()=>{
   const c=cars[sellingIndex]; if(!c) return;
-  const venda={ comprador:$('#mComprador').value.trim().toUpperCase(), vendedor:$('#mVendedor').value.trim().toUpperCase(), valorVenda:+($('#mValor').value||0), comissao:+($('#mComissao').value||0), data:$('#mData').value||today(), obs:$('#mObs').value.trim().toUpperCase(), doc:'' };
+  const venda={
+    comprador:$('#mComprador').value.trim().toUpperCase(),
+    vendedor:$('#mVendedor').value.trim().toUpperCase(),
+    valorVenda:+($('#mValor').value||0),
+    comissao:+($('#mComissao').value||0),
+    data:$('#mData').value||today(),
+    obs:$('#mObs').value.trim().toUpperCase(),
+    doc:''
+  };
   if(!venda.comprador||!venda.valorVenda){ alert('Preencha Comprador e Valor da venda.'); return; } // vendedor e comissão opcionais
 
   if($('#mTroca').checked){
@@ -516,7 +566,16 @@ $('#mSalvar').onclick=()=>{
 };
 
 /* ===== Vendidos ===== */
-function renderSold(){ const tb=$('#soldTable'); tb.innerHTML=''; cars.filter(c=>c.venda).forEach(c=>{ const tr=document.createElement('tr'); tr.dataset.id=c.id; tr.innerHTML=`<td><span class="chip">${esc(c.placa)}</span></td><td><span class="veh">${esc(c.marca)} ${esc(c.modelo)}</span>${c.versao?`<span class="sub">${esc(c.versao)}</span>`:''}</td><td class="right"><button class="btn secondary" data-exp>+</button> <button class="btn bad" data-del>🗑️</button></td>`; tb.appendChild(tr); }); }
+function renderSold(){
+  const tb=$('#soldTable'); tb.innerHTML='';
+  cars.filter(c=>c.venda).forEach(c=>{
+    const tr=document.createElement('tr'); tr.dataset.id=c.id;
+    tr.innerHTML=`<td><span class="chip">${esc(c.placa)}</span></td>
+                  <td><span class="veh">${esc(c.marca)} ${esc(c.modelo)}</span>${c.versao?`<span class="sub">${esc(c.versao)}</span>`:''}</td>
+                  <td class="right"><button class="btn secondary" data-exp>+</button> <button class="btn bad" data-del>🗑️</button></td>`;
+    tb.appendChild(tr);
+  });
+}
 function openSoldRow(base,car){
   const next=base.nextElementSibling; if(next?.classList.contains('expand')){ next.remove(); return; }
   const v=car.venda; const inv=invested(car)+(+v.comissao||0); const lucro=(+v.valorVenda||0)-inv; const pct=inv? (lucro/inv*100):0;
@@ -563,17 +622,32 @@ function openSoldRow(base,car){
   ex.appendChild(td); base.parentNode.insertBefore(ex,base.nextSibling);
   const d=ex.querySelector('[data-data]'); if(d&&!d.value) d.value=today();
 
-  // Adicionar gasto em vendidos
+  // Add gasto em vendidos
   ex.querySelector('[data-cancel]').onclick=()=> ex.querySelector('[data-form]').hidden=true;
   ex.querySelector('.gx .badge').onclick=()=>{ const f=ex.querySelector('[data-form]'); f.hidden=!f.hidden; const dt=f.querySelector('[data-data]'); if(!dt.value) dt.value=today(); };
   ex.querySelector('[data-save]').onclick=()=>{ const desc=ex.querySelector('[data-desc]').value.trim().toUpperCase()||'GASTO'; const val=+ex.querySelector('[data-valor]').value||0; const dt=ex.querySelector('[data-data]').value||today(); if(val<=0) return; car.gastos.push({desc,valor:val,data:dt,pago:null}); save(); ex.querySelector('[data-list]').innerHTML=(car.gastos||[]).map((g,i)=>gastoHTML(g,i)).join(''); const inv2=invested(car)+(+car.venda.comissao||0); const lucro2=(+car.venda.valorVenda||0)-inv2; ex.querySelector('[data-invest]').innerHTML='Investido: <b>'+BRL(inv2)+'</b>'; ex.querySelector('[data-lucro]').innerHTML='Lucro: <b>'+BRL(lucro2)+'</b>'; ex.querySelector('[data-pct]').innerHTML='Lucro (%): <b>'+ (inv2? (lucro2/inv2*100).toFixed(2):'0.00') +'%</b>'; ex.querySelector('[data-form]').hidden=true; ex.querySelector('[data-desc]').value=''; ex.querySelector('[data-valor]').value=''; };
 
-  ex.querySelector('[data-list]').onclick=(e)=>{ const gi=e.target.closest('.gasto-item'); if(!gi) return; const idx=+gi.dataset.gidx;
-    if(e.target.matches('[data-del]')){ if(confirm('Excluir gasto?')){ car.gastos.splice(idx,1); save(); gi.remove(); const inv2=invested(car)+(+car.venda.comissao||0); const lucro2=(+car.venda.valorVenda||0)-inv2; ex.querySelector('[data-invest]').innerHTML='Investido: <b>'+BRL(inv2)+'</b>'; ex.querySelector('[data-lucro]').innerHTML='Lucro: <b>'+BRL(lucro2)+'</b>'; ex.querySelector('[data-pct]').innerHTML='Lucro (%): <b>'+ (inv2? (lucro2/inv2*100).toFixed(2):'0.00') +'%</b>'; } }
-    if(e.target.matches('[data-pay]')){ const sel=e.target.getAttribute('data-pay'); car.gastos[idx].pago=(sel==='sim'); save(); gi.querySelectorAll('.pill').forEach(p=>p.classList.remove('on')); if(sel==='sim') gi.querySelector('.pill.ok').classList.add('on'); else gi.querySelector('.pill.bad').classList.add('on'); }
+  ex.querySelector('[data-list]').onclick=(e)=>{
+    const gi=e.target.closest('.gasto-item'); if(!gi) return; const idx=+gi.dataset.gidx;
+    if(e.target.matches('[data-del]')){
+      if(confirm('Excluir gasto?')){
+        car.gastos.splice(idx,1); save(); gi.remove();
+        const inv2=invested(car)+(+car.venda.comissao||0); const lucro2=(+car.venda.valorVenda||0)-inv2;
+        ex.querySelector('[data-invest]').innerHTML='Investido: <b>'+BRL(inv2)+'</b>';
+        ex.querySelector('[data-lucro]').innerHTML='Lucro: <b>'+BRL(lucro2)+'</b>';
+        ex.querySelector('[data-pct]').innerHTML='Lucro (%): <b>'+ (inv2? (lucro2/inv2*100).toFixed(2):'0.00') +'%</b>';
+      }
+    }
+    if(e.target.matches('[data-pay]')){
+      const sel=e.target.getAttribute('data-pay');
+      car.gastos[idx].pago=(sel==='sim'); save();
+      gi.querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));
+      if(sel==='sim') gi.querySelector('.pill.ok').classList.add('on');
+      else gi.querySelector('.pill.bad').classList.add('on');
+    }
   };
 
-  // Documento: neutro -> verde / vermelho
+  // Documento: neutro -> verde/vermelho
   const btnC=ex.querySelector('[data-docset="certo"]');
   const btnF=ex.querySelector('[data-docset="falta"]');
   const clear=()=>{btnC.classList.remove('on','ok'); btnF.classList.remove('on','bad');}
@@ -581,7 +655,11 @@ function openSoldRow(base,car){
   btnF.onclick=()=>{ car.venda.doc='falta'; save(); clear(); btnF.classList.add('on','bad'); };
   ex.querySelector('[data-docset="clear"]').onclick=()=>{ delete car.venda.doc; save(); clear(); };
 }
-$('#soldTable').onclick=(e)=>{ const tr=e.target.closest('tr'); if(!tr) return; const car=cars.find(x=>x.id===tr.dataset.id); if(e.target.matches('[data-del]')){ if(confirm('Excluir carro vendido?')){ cars=cars.filter(x=>x.id!==car.id); save(); renderSold(); } return; } if(e.target.matches('[data-exp]')) openSoldRow(tr,car); };
+$('#soldTable').onclick=(e)=>{
+  const tr=e.target.closest('tr'); if(!tr) return; const car=cars.find(x=>x.id===tr.dataset.id);
+  if(e.target.matches('[data-del]')){ if(confirm('Excluir carro vendido?')){ cars=cars.filter(x=>x.id!==car.id); save(); renderSold(); } return; }
+  if(e.target.matches('[data-exp]')) openSoldRow(tr,car);
+};
 $('#btnReport').onclick=()=>openReport();
 
 /* ===== Relatório ===== */
@@ -638,8 +716,37 @@ function renderReport(){
 }
 
 /* ===== Notas ===== */
-function renderNotes(){ const tb=$('#notesTable'); tb.innerHTML=''; notes.forEach(n=>{ const tr=document.createElement('tr'); tr.dataset.id=n.id; tr.innerHTML=`<td><b>${esc(n.titulo)}</b></td><td class="right"><button class="btn secondary" data-exp>+</button> <button class="btn bad" data-del>🗑️</button></td>`; tb.appendChild(tr); }); tb.onclick=(e)=>{ const row=e.target.closest('tr'); if(!row) return; const idx=notes.findIndex(x=>x.id===row.dataset.id); if(idx<0) return; if(e.target.matches('[data-del]')){ if(confirm('Excluir anotação?')){ notes.splice(idx,1); saveN(); renderNotes(); } return; } if(e.target.matches('[data-exp]')){ const next=row.nextElementSibling; if(next?.classList.contains('expand')){ next.remove(); return; } const det=document.createElement('tr'); det.className='expand'; const td=document.createElement('td'); td.colSpan=2; td.innerHTML=`<div class="wrap"><div class="kv" style="justify-content:flex-start"><b>Observação</b></div><div class="kv"><span>${esc(notes[idx].obs||'').replace(/\n/g,'<br>')}</span></div></div>`; det.appendChild(td); row.parentNode.insertBefore(det,row.nextSibling); } }; }
-$('#btnNote').onclick=()=>{ const t=$('#nTitulo').value.trim().toUpperCase(); const o=$('#nObs').value.trim().toUpperCase(); if(!t){ alert('Informe um título.'); return; } notes.unshift({id:uid(),titulo:t,obs:o}); saveN(); $('#nTitulo').value=''; $('#nObs').value=''; renderNotes(); };
+function renderNotes(){
+  const tb=$('#notesTable'); tb.innerHTML='';
+  notes.forEach(n=>{
+    const tr=document.createElement('tr'); tr.dataset.id=n.id;
+    tr.innerHTML=`<td><b>${esc(n.titulo)}</b></td><td class="right"><button class="btn secondary" data-exp>+</button> <button class="btn bad" data-del>🗑️</button></td>`;
+    tb.appendChild(tr);
+  });
+  tb.onclick=(e)=>{
+    const row=e.target.closest('tr'); if(!row) return;
+    const idx=notes.findIndex(x=>x.id===row.dataset.id); if(idx<0) return;
+    if(e.target.matches('[data-del]')){
+      if(confirm('Excluir anotação?')){ notes.splice(idx,1); saveN(); renderNotes(); }
+      return;
+    }
+    if(e.target.matches('[data-exp]')){
+      const next=row.nextElementSibling;
+      if(next?.classList.contains('expand')){ next.remove(); return; }
+      const det=document.createElement('tr'); det.className='expand'; const td=document.createElement('td'); td.colSpan=2;
+      td.innerHTML=`<div class="wrap"><div class="kv" style="justify-content:flex-start"><b>Observação</b></div><div class="kv"><span>${esc(notes[idx].obs||'').replace(/\n/g,'<br>')}</span></div></div>`;
+      det.appendChild(td); row.parentNode.insertBefore(det,row.nextSibling);
+    }
+  };
+}
+$('#btnNote').onclick=()=>{
+  const t=$('#nTitulo').value.trim().toUpperCase();
+  const o=$('#nObs').value.trim().toUpperCase();
+  if(!t){ alert('Informe um título.'); return; }
+  notes.unshift({id:uid(),titulo:t,obs:o}); saveN();
+  $('#nTitulo').value=''; $('#nObs').value='';
+  renderNotes();
+};
 
 /* ===== Inputs moeda para FIPE/Alvo ===== */
 function attachCurrency(input, onChange){
@@ -651,8 +758,11 @@ function attachCurrency(input, onChange){
 }
 
 /* ===== Init ===== */
-fillMarcas($('#iMarca')); fillModelos($('#iModelo'),''); fillYears($('#iAnoFab'),'Ano fabricação'); fillYears($('#iAnoMod'),'Ano modelo'); $('#iMarca').onchange=()=>fillModelos($('#iModelo'),$('#iMarca').value);
+fillMarcas($('#iMarca')); fillModelos($('#iModelo'),'');
+fillYears($('#iAnoFab'),'Ano fabricação'); fillYears($('#iAnoMod'),'Ano modelo');
+$('#iMarca').onchange=()=>fillModelos($('#iModelo'),$('#iMarca').value);
 renderCars(); renderSold();
+
 })();
 </script>
 </body>
