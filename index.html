@@ -71,15 +71,10 @@ td.right,th.right{text-align:right}
 .gasto-item{display:flex;justify-content:space-between;gap:10px;background:#0b1120;border:1px solid var(--line);border-radius:10px;padding:8px;margin-bottom:8px}
 .gasto-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 
-/* PAGO: Sim/Não (neutro até clicar) */
-.pill{border:1px solid var(--line);background:#1a2340;color:#eaf0ff;border-radius:999px;padding:6px 10px;font-weight:800}
-.pill.ok.on{background:var(--ok);color:#062111;border-color:transparent}
-.pill.bad.on{background:var(--bad);color:#fff;border-color:transparent}
-
-/* Documento: Certo/Falta (neutro até clicar) */
-.docbtn{border:1px solid var(--line);background:#1a2340;color:#eaf0ff;border-radius:999px;padding:6px 10px;font-weight:800}
-.docbtn.on.ok{background:var(--ok);color:#062111;border-color:transparent}
-.docbtn.on.bad{background:var(--bad);color:#fff;border-color:transparent}
+/* PAGO & DOCUMENTO (neutro até clicar) */
+.pill,.docbtn{border:1px solid var(--line);background:#1a2340;color:#eaf0ff;border-radius:999px;padding:6px 10px;font-weight:800}
+.pill.ok.on,.docbtn.on.ok{background:var(--ok);color:#062111;border-color:transparent}
+.pill.bad.on,.docbtn.on.bad{background:var(--bad);color:#fff;border-color:transparent}
 
 /* MODAIS */
 .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:50}
@@ -107,6 +102,7 @@ td.right,th.right{text-align:right}
     <button class="tab" data-tab="cars">Meus Carros</button>
     <button class="tab" data-tab="sold">Vendidos</button>
     <button class="tab" data-tab="notes">Anotações</button>
+    <button class="tab" data-tab="settings">Configurações</button>
   </div>
 
   <div class="wrapper">
@@ -126,6 +122,7 @@ td.right,th.right{text-align:right}
         <div class="row">
           <select id="iAnoFab"></select>
           <select id="iAnoMod"></select>
+          <input id="iDataCompra" type="date" title="Data da compra">
         </div>
         <div class="row">
           <input id="iKm" type="number" inputmode="numeric" placeholder="KM">
@@ -170,7 +167,7 @@ td.right,th.right{text-align:right}
           <thead><tr><th>Placa</th><th>Veículo</th><th class="right">Ações</th></tr></thead>
           <tbody id="carsTable"></tbody>
         </table>
-        <div class="muted" style="margin-top:8px">FIPE fica bloqueada até clicar <b>Editar FIPE</b>. “Valor de venda (alvo)” calcula o lucro sozinho. Em cada gasto use <b>PAGO: Sim/Não</b>.</div>
+        <div class="muted" style="margin-top:8px">Ordenado por <b>Data da compra</b> (mais recentes). FIPE é liberada pelo botão <b>Editar FIPE</b>.</div>
       </div>
     </section>
 
@@ -182,9 +179,10 @@ td.right,th.right{text-align:right}
           <button class="btn secondary" id="btnReport">Relatório</button>
         </div>
         <table>
-          <thead><tr><th>Placa</th><th>Veículo</th><th class="right">Ações</th></tr></thead>
+          <thead><tr><th>Data</th><th>Placa</th><th>Veículo</th><th class="right">Ações</th></tr></thead>
           <tbody id="soldTable"></tbody>
         </table>
+        <div class="muted">Ordenado por <b>data da venda</b> (mais recentes).</div>
       </div>
     </section>
 
@@ -198,6 +196,22 @@ td.right,th.right{text-align:right}
       </div>
       <div class="card">
         <table><thead><tr><th>Título</th><th class="right">Ações</th></tr></thead><tbody id="notesTable"></tbody></table>
+      </div>
+    </section>
+
+    <!-- CONFIGURAÇÕES -->
+    <section id="settings" class="section">
+      <div class="card">
+        <h2>Configurações</h2>
+        <div class="row">
+          <button class="btn primary" id="btnExport">Exportar backup</button>
+          <label class="btn secondary" for="fileImport" style="cursor:pointer">Importar backup</label>
+          <input id="fileImport" type="file" accept="application/json" style="display:none">
+        </div>
+        <div class="row">
+          <span class="badge">Último backup: <b id="lastBackup">—</b></span>
+        </div>
+        <div class="muted">O backup inclui: carros, gastos, vendas e anotações.</div>
       </div>
     </section>
   </div>
@@ -289,12 +303,13 @@ const $$=(s,r)=> Array.from((r||document).querySelectorAll(s));
 const BRL=v=> new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(+v||0);
 const INT=v=> new Intl.NumberFormat('pt-BR').format(+v||0);
 const today=()=> new Date().toISOString().slice(0,10);
+const nowStr=()=> new Date().toLocaleString('pt-BR');
 const uid=()=> Math.random().toString(36).slice(2)+Date.now().toString(36);
 const esc=s=> String(s??'').replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
 const store=(()=>{try{const k='__t__';localStorage.setItem(k,'1');localStorage.removeItem(k);return localStorage;}catch(e){const m={};return{getItem:k=>m[k]||null,setItem:(k,v)=>m[k]=String(v),removeItem:k=>delete m[k]};}})();
 
 /* ===== Estado ===== */
-const KEY='cars_clean_v20', KEYN='notes_clean_v20';
+const KEY='cars_v21', KEYN='notes_v21', KEYBK='backup_info_v21';
 let cars=JSON.parse(store.getItem(KEY)||'[]');
 let notes=JSON.parse(store.getItem(KEYN)||'[]');
 const save = ()=>{ try{store.setItem(KEY,JSON.stringify(cars));}catch(e){} };
@@ -307,10 +322,11 @@ function setTab(id){
   if(id==='cars') renderCars();
   if(id==='sold') renderSold();
   if(id==='notes') renderNotes();
+  if(id==='settings') refreshBackupLabel();
 }
 $$('.tab').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
 
-/* ===== Catálogo ===== */
+/* ===== Catálogo (será ordenado ao preencher) ===== */
 const CATALOG={
  'Chevrolet':['Onix','Onix Plus','Tracker','Spin','S10','Montana','Cruze','Equinox','Trailblazer'],
  'Volkswagen':['Gol','Polo','Virtus','Nivus','T-Cross','Taos','Saveiro','Amarok','Jetta'],
@@ -342,14 +358,16 @@ function fillYears(sel,ph){
     Array.from({length:28},(_,i)=>2005+i).map(y=>`<option>${y}</option>`).join('');
 }
 function fillMarcas(sel){
+  const marcas = Object.keys(CATALOG).sort((a,b)=>a.localeCompare(b,'pt-BR'));
   sel.innerHTML = '<option value="">Marca</option>' +
-    Object.keys(CATALOG).map(m=>`<option>${m}</option>`).join('');
+    marcas.map(m=>`<option>${m}</option>`).join('');
 }
 function fillModelos(sel,marca,ph='Modelo'){
   if(!marca){ sel.innerHTML='<option>Selecione a marca primeiro</option>'; sel.disabled=true; return; }
   sel.disabled=false;
+  const modelos = (CATALOG[marca]||[]).slice().sort((a,b)=>a.localeCompare(b,'pt-BR'));
   sel.innerHTML = '<option value="">' + ph + '</option>' +
-    CATALOG[marca].map(m=>`<option>${m}</option>`).join('');
+    modelos.map(m=>`<option>${m}</option>`).join('');
 }
 
 /* ===== Calculadora ===== */
@@ -369,6 +387,7 @@ function calc(){
 $('#btnCalc').onclick=calc; ['#cCompra','#cFipe','#cGastos'].forEach(s=>($(s).oninput=calc));
 
 /* ===== Adicionar ===== */
+$('#iDataCompra').value = today();
 $('#btnAdd').onclick=()=>{
   const placaIn = ($('#iPlaca').value||'').trim();
   const c={
@@ -377,15 +396,15 @@ $('#btnAdd').onclick=()=>{
     marca:$('#iMarca').value, modelo:$('#iModelo').value,
     versao:$('#iVersao').value, cor:$('#iCor').value,
     anoFab:$('#iAnoFab').value, anoMod:$('#iAnoMod').value,
+    dataCompra: $('#iDataCompra').value || today(),
     km:+($('#iKm').value||0), valorCompra:+($('#iValor').value||0),
     fipe:+($('#iFipe').value||0),
     gastos:[], precoAlvo:0, venda:null
   };
-  if(!c.placa||!c.marca||!c.modelo||!c.anoFab||!c.anoMod||!$('#iKm').value||!$('#iValor').value||!c.cor){
+  if(!c.placa||!c.marca||!c.modelo||!c.anoFab||!c.anoMod||!$('#iKm').value||!$('#iValor').value||!c.cor||!c.dataCompra){
     alert('Preencha todos os campos.'); return;
   }
   if(+c.anoMod < +c.anoFab){ alert('Ano modelo não pode ser menor que ano fabricação.'); return; }
-  // Checagem de placa duplicada (case-insensitive), sem mudar o que o usuário digitou
   if(cars.some(x=>!x.venda && String(x.placa).toUpperCase() === c.placa.toUpperCase())){
     alert('Placa já cadastrada.'); return;
   }
@@ -393,6 +412,7 @@ $('#btnAdd').onclick=()=>{
   ['iPlaca','iVersao','iCor','iKm','iValor','iFipe'].forEach(id=>$('#'+id).value='');
   $('#iMarca').selectedIndex=0; fillModelos($('#iModelo'),'');
   $('#iAnoFab').selectedIndex=0; $('#iAnoMod').selectedIndex=0;
+  $('#iDataCompra').value=today();
   setTab('cars');
 };
 
@@ -413,10 +433,20 @@ const gastoHTML = (g,i) => `
     </div>
   </div>`;
 
-/* ===== Meus Carros ===== */
+/* ===== Meus Carros (ordenar por dataCompra desc) ===== */
+function sortByDateDesc(aISO,bISO){
+  const a = aISO ? new Date(aISO).getTime() : 0;
+  const b = bISO ? new Date(bISO).getTime() : 0;
+  return b - a;
+}
+function ensureDataCompra(car){
+  if(!car.dataCompra){ car.dataCompra = today(); }
+}
 function renderCars(){
   const tb=$('#carsTable'); tb.innerHTML='';
-  cars.filter(c=>!c.venda).forEach(c=>{
+  const list = cars.filter(c=>!c.venda).map(c=>{ ensureDataCompra(c); return c; })
+                  .sort((a,b)=>sortByDateDesc(a.dataCompra,b.dataCompra));
+  list.forEach(c=>{
     const tr=document.createElement('tr'); tr.dataset.id=c.id;
     tr.innerHTML=`<td><span class="chip">${esc(c.placa)}</span></td>
       <td><span class="veh">${esc(c.marca)} ${esc(c.modelo)}</span>${c.versao?`<span class="sub">${esc(c.versao)}</span>`:''}</td>
@@ -426,11 +456,13 @@ function renderCars(){
 }
 function openCarRow(base,car){
   const next=base.nextElementSibling; if(next?.classList.contains('expand')){ next.remove(); return;}
+  ensureDataCompra(car);
   const ex=document.createElement('tr'); ex.className='expand'; const td=document.createElement('td'); td.colSpan=3;
   const inv=invested(car);
   td.innerHTML=`
     <div class="wrap">
       <div class="grid two">
+        <div class="kv"><b>Data da compra</b><span class="val">${esc(car.dataCompra||'—')}</span></div>
         <div class="kv"><b>Ano</b><span class="val">${esc(car.anoFab)}/${esc(car.anoMod)}</span></div>
         <div class="kv"><b>Cor</b><span class="val">${esc(car.cor)}</span></div>
         <div class="kv"><b>KM</b><span class="val">${INT(car.km)}</span></div>
@@ -549,12 +581,13 @@ $('#mValor').oninput=recomputeModal; $('#mComissao').oninput=recomputeModal; $('
 
 $('#mSalvar').onclick=()=>{
   const c=cars[sellingIndex]; if(!c) return;
+  const dataVenda = $('#mData').value || today();
   const venda={
     comprador:$('#mComprador').value.trim(),
     vendedor:$('#mVendedor').value.trim(),
     valorVenda:+($('#mValor').value||0),
     comissao:+($('#mComissao').value||0),
-    data:$('#mData').value||today(),
+    data:dataVenda,
     obs:$('#mObs').value.trim(),
     doc:''
   };
@@ -564,9 +597,13 @@ $('#mSalvar').onclick=()=>{
     const tp=($('#tPlaca').value||'').trim(), tm=$('#tMarca').value, tmo=$('#tModelo').value, tv=$('#tVersao').value.trim(), tc=$('#tCor').value.trim(), tf=$('#tFab').value, tm2=$('#tMod').value, tkm=+($('#tKm').value||0), tval=+($('#tCompra').value||0);
     if(tp&&tm&&tmo&&tf&&tm2&&tc&&$('#tKm').value&&$('#tCompra').value){
       venda.trade={placa:tp, carro:tm+' '+tmo, valor:tval};
-      // evita duplicar placa independente de maiúsc/minúsc
       if(!cars.some(x=>!x.venda && String(x.placa).toUpperCase()===tp.toUpperCase())){
-        cars.unshift({id:uid(),placa:tp,marca:tm,modelo:tmo,versao:tv,cor:tc,anoFab:tf,anoMod:tm2,km:tkm,valorCompra:tval,fipe:0,gastos:[],precoAlvo:0,venda:null});
+        cars.unshift({
+          id:uid(), placa:tp, marca:tm, modelo:tmo, versao:tv, cor:tc,
+          anoFab:tf, anoMod:tm2, km:tkm, valorCompra:tval, fipe:0,
+          gastos:[], precoAlvo:0, venda:null,
+          dataCompra: dataVenda  /* <- data da compra = data da negociação */
+        });
       }
     }
   }
@@ -574,12 +611,15 @@ $('#mSalvar').onclick=()=>{
   save(); $('#modal').classList.remove('active'); renderCars(); setTab('sold');
 };
 
-/* ===== Vendidos ===== */
+/* ===== Vendidos (ordenar por data desc) ===== */
 function renderSold(){
   const tb=$('#soldTable'); tb.innerHTML='';
-  cars.filter(c=>c.venda).forEach(c=>{
+  const list=cars.filter(c=>c.venda && c.venda.data)
+                 .sort((a,b)=>sortByDateDesc(a.venda.data,b.venda.data));
+  list.forEach(c=>{
     const tr=document.createElement('tr'); tr.dataset.id=c.id;
-    tr.innerHTML=`<td><span class="chip">${esc(c.placa)}</span></td>
+    tr.innerHTML=`<td>${esc(c.venda.data)}</td>
+                  <td><span class="chip">${esc(c.placa)}</span></td>
                   <td><span class="veh">${esc(c.marca)} ${esc(c.modelo)}</span>${c.versao?`<span class="sub">${esc(c.versao)}</span>`:''}</td>
                   <td class="right"><button class="btn secondary" data-exp>+</button> <button class="btn bad" data-del>🗑️</button></td>`;
     tb.appendChild(tr);
@@ -588,7 +628,7 @@ function renderSold(){
 function openSoldRow(base,car){
   const next=base.nextElementSibling; if(next?.classList.contains('expand')){ next.remove(); return; }
   const v=car.venda; const inv=invested(car)+(+v.comissao||0); const lucro=(+v.valorVenda||0)-inv; const pct=inv? (lucro/inv*100):0;
-  const ex=document.createElement('tr'); ex.className='expand'; const td=document.createElement('td'); td.colSpan=3;
+  const ex=document.createElement('tr'); ex.className='expand'; const td=document.createElement('td'); td.colSpan=4;
   const tradeBadge = v.trade ? `
       <span class="badge">Entrou: <b>${esc(v.trade.carro)} ${esc(v.trade.placa)}</b> (${BRL(v.trade.valor)})</span>
       <span class="badge">Diferença do valor: <b>${BRL((+v.valorVenda||0) - (+v.trade.valor||0))}</b></span>` : '';
@@ -766,11 +806,47 @@ function attachCurrency(input, onChange){
   input.addEventListener('blur',  ()=>{ const val=parse(input.value); input.value = val ? format(val) : ''; onChange(val); });
 }
 
+/* ===== Backup / Restore (Configurações) ===== */
+function refreshBackupLabel(){
+  const info = JSON.parse(store.getItem(KEYBK) || 'null');
+  $('#lastBackup').textContent = info?.when || '—';
+}
+$('#btnExport').onclick=()=>{
+  const payload = { version:'v21', when: nowStr(), cars, notes };
+  const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const ymd = new Date().toISOString().slice(0,10);
+  a.download = `backup-carros-${ymd}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  store.setItem(KEYBK, JSON.stringify({when: nowStr()}));
+  refreshBackupLabel();
+};
+$('#fileImport').addEventListener('change', (e)=>{
+  const f=e.target.files?.[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const obj = JSON.parse(reader.result);
+      if(!obj || (!Array.isArray(obj.cars) && !Array.isArray(obj.notes))) throw new Error('Arquivo inválido.');
+      cars = Array.isArray(obj.cars) ? obj.cars : [];
+      notes = Array.isArray(obj.notes) ? obj.notes : [];
+      save(); saveN();
+      alert('Backup importado com sucesso!');
+      renderCars(); renderSold(); renderNotes(); setTab('cars');
+    }catch(err){
+      alert('Falha ao importar: ' + err.message);
+    }
+    e.target.value='';
+  };
+  reader.readAsText(f);
+});
+
 /* ===== Init ===== */
 fillMarcas($('#iMarca')); fillModelos($('#iModelo'),'');
 fillYears($('#iAnoFab'),'Ano fabricação'); fillYears($('#iAnoMod'),'Ano modelo');
 $('#iMarca').onchange=()=>fillModelos($('#iModelo'),$('#iMarca').value);
-renderCars(); renderSold();
+renderCars(); renderSold(); refreshBackupLabel();
 
 })();
 </script>
