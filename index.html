@@ -29,10 +29,9 @@ body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 Inter,system-u
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:16px 0;box-shadow:0 10px 28px rgba(0,0,0,.35)}
 .card h2,.card h3{margin:0 0 10px}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px}
-input,select,textarea{flex:1;min-width:220px;background:#0b1120;color:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:16px;min-height:44px;outline:0;text-transform:uppercase}
+input,select,textarea{flex:1;min-width:220px;background:#0b1120;color:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:16px;min-height:44px;outline:0}
 input::placeholder,textarea::placeholder{color:#7f8aa3}
 select option{background:#ffffff;color:#0b1018}
-.upper{text-transform:uppercase}
 
 /* BOTÕES */
 .btn{appearance:none;border:none;border-radius:12px;cursor:pointer;min-height:36px;padding:10px 12px;font-weight:800}
@@ -115,14 +114,14 @@ td.right,th.right{text-align:right}
     <section id="add" class="section active">
       <div class="card">
         <h2>Adicionar Carro</h2>
-        <div class="row"><input id="iPlaca" class="upper" placeholder="Placa (ABC1D23)" autocapitalize="characters"></div>
+        <div class="row"><input id="iPlaca" placeholder="Placa (ABC1D23)"></div>
         <div class="row">
           <select id="iMarca"></select>
           <select id="iModelo" disabled><option>Selecione a marca primeiro</option></select>
         </div>
         <div class="row">
-          <input id="iVersao" class="upper" placeholder="Versão (LTZ, EXL...)">
-          <input id="iCor" class="upper" placeholder="Cor">
+          <input id="iVersao" placeholder="Versão (LTZ, EXL...)">
+          <input id="iCor" placeholder="Cor">
         </div>
         <div class="row">
           <select id="iAnoFab"></select>
@@ -193,8 +192,8 @@ td.right,th.right{text-align:right}
     <section id="notes" class="section">
       <div class="card">
         <h2>Anotações</h2>
-        <div class="row"><input id="nTitulo" class="upper" placeholder="Título"></div>
-        <div class="row"><textarea id="nObs" class="upper" placeholder="Observação..." rows="4"></textarea></div>
+        <div class="row"><input id="nTitulo" placeholder="Título"></div>
+        <div class="row"><textarea id="nObs" placeholder="Observação..." rows="4"></textarea></div>
         <div class="row"><button class="btn primary" id="btnNote">Adicionar anotação</button></div>
       </div>
       <div class="card">
@@ -214,9 +213,19 @@ td.right,th.right{text-align:right}
         <div class="row"><span class="badge" id="mInfo"></span><span class="badge">Total investido: <b id="mInv">R$ 0,00</b></span></div>
 
         <div class="card" style="padding:12px">
-          <div class="row"><input id="mComprador" class="upper" placeholder="Comprador"><input id="mVendedor" class="upper" placeholder="Vendedor (opcional)"><input id="mComissao" type="number" step="0.01" placeholder="Comissão (R$ — opcional)"></div>
-          <div class="row"><input id="mValor" type="number" step="0.01" placeholder="Valor da venda (R$)"><input id="mData" type="date"></div>
-          <div class="row"><input id="mLucro" disabled placeholder="Lucro (R$) — automático"><input id="mPct" disabled placeholder="Lucro (%) — automático"></div>
+          <div class="row">
+            <input id="mComprador" placeholder="Comprador">
+            <input id="mVendedor" placeholder="Vendedor (opcional)">
+            <input id="mComissao" type="number" step="0.01" placeholder="Comissão (R$ — opcional)">
+          </div>
+          <div class="row">
+            <input id="mValor" type="number" step="0.01" placeholder="Valor da venda (R$)">
+            <input id="mData" type="date">
+          </div>
+          <div class="row">
+            <input id="mLucro" disabled placeholder="Lucro (R$) — automático">
+            <input id="mPct" disabled placeholder="Lucro (%) — automático">
+          </div>
 
           <div class="swapbar">
             <label style="display:flex;align-items:center;gap:10px"><input type="checkbox" id="mTroca"><b>Entrou carro na troca</b></label>
@@ -225,14 +234,18 @@ td.right,th.right{text-align:right}
 
           <!-- TROCA -->
           <div id="mTrocaBox" style="display:none;margin-top:8px">
-            <div class="row"><input id="tPlaca" class="upper" placeholder="Placa"><select id="tMarca"></select><select id="tModelo" disabled><option>Selecione a marca</option></select></div>
-            <div class="row"><input id="tVersao" class="upper" placeholder="Versão"><input id="tCor" class="upper" placeholder="Cor"></div>
+            <div class="row">
+              <input id="tPlaca" placeholder="Placa">
+              <select id="tMarca"></select>
+              <select id="tModelo" disabled><option>Selecione a marca</option></select>
+            </div>
+            <div class="row"><input id="tVersao" placeholder="Versão"><input id="tCor" placeholder="Cor"></div>
             <div class="row"><select id="tFab"></select><select id="tMod"></select></div>
             <div class="row"><input id="tKm" type="number" placeholder="KM"><input id="tCompra" type="number" step="0.01" placeholder="Valor que entrou o carro (R$)"></div>
             <div class="row" id="tDiffRow" style="display:none"><span class="badge">Diferença do valor: <b id="tDiff">R$ 0,00</b></span></div>
           </div>
 
-          <div class="row"><textarea id="mObs" class="upper" placeholder="Observações" rows="3"></textarea></div>
+          <div class="row"><textarea id="mObs" placeholder="Observações" rows="3"></textarea></div>
           <div class="row" style="justify-content:flex-end"><button class="btn ok" id="mSalvar">Salvar venda</button></div>
         </div>
       </div>
@@ -280,17 +293,8 @@ const uid=()=> Math.random().toString(36).slice(2)+Date.now().toString(36);
 const esc=s=> String(s??'').replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
 const store=(()=>{try{const k='__t__';localStorage.setItem(k,'1');localStorage.removeItem(k);return localStorage;}catch(e){const m={};return{getItem:k=>m[k]||null,setItem:(k,v)=>m[k]=String(v),removeItem:k=>delete m[k]};}})();
 
-/* Maiúsculas preservando cursor */
-document.addEventListener('input',e=>{
-  const el=e.target;
-  if(!['INPUT','TEXTAREA'].includes(el.tagName)) return;
-  const st=el.selectionStart, en=el.selectionEnd;
-  el.value = el.value.toUpperCase();
-  if(st!=null && en!=null) el.setSelectionRange(st,en);
-});
-
 /* ===== Estado ===== */
-const KEY='cars_clean_v19', KEYN='notes_clean_v19';
+const KEY='cars_clean_v20', KEYN='notes_clean_v20';
 let cars=JSON.parse(store.getItem(KEY)||'[]');
 let notes=JSON.parse(store.getItem(KEYN)||'[]');
 const save = ()=>{ try{store.setItem(KEY,JSON.stringify(cars));}catch(e){} };
@@ -330,7 +334,8 @@ const CATALOG={
  'Volvo':['XC40','XC60','XC90','C40'],
  'Land Rover':['Evoque','Discovery Sport','Range Rover Sport','Discovery 4','Defender'],
  'RAM':['1500','2500','3500'],
- 'MINI':['Cooper Hatch','Countryman']
+ 'MINI':['Cooper Hatch','Countryman'],
+ 'Ford':['Ka','Ka Sedan','Fiesta','Focus','Fusion','EcoSport','Territory','Bronco Sport','Ranger','Maverick','Mustang']
 };
 function fillYears(sel,ph){
   sel.innerHTML = '<option value="">' + ph + '</option>' +
@@ -361,16 +366,16 @@ function calc(){
   $('#rLucroFipe').textContent=BRL(lucro)+' ('+pctL.toFixed(2).replace('.',',')+'%)';
   $('#rCompraMax30').textContent=BRL(compraMax30);
 }
-$('#btnCalc').onclick=calc;
-['#cCompra','#cFipe','#cGastos'].forEach(s=>($(s).oninput=calc));
+$('#btnCalc').onclick=calc; ['#cCompra','#cFipe','#cGastos'].forEach(s=>($(s).oninput=calc));
 
 /* ===== Adicionar ===== */
 $('#btnAdd').onclick=()=>{
+  const placaIn = ($('#iPlaca').value||'').trim();
   const c={
     id:uid(),
-    placa:($('#iPlaca').value||'').toUpperCase().replace(/[^A-Z0-9]/g,''),
+    placa:placaIn,
     marca:$('#iMarca').value, modelo:$('#iModelo').value,
-    versao:$('#iVersao').value.toUpperCase(), cor:$('#iCor').value.toUpperCase(),
+    versao:$('#iVersao').value, cor:$('#iCor').value,
     anoFab:$('#iAnoFab').value, anoMod:$('#iAnoMod').value,
     km:+($('#iKm').value||0), valorCompra:+($('#iValor').value||0),
     fipe:+($('#iFipe').value||0),
@@ -380,7 +385,10 @@ $('#btnAdd').onclick=()=>{
     alert('Preencha todos os campos.'); return;
   }
   if(+c.anoMod < +c.anoFab){ alert('Ano modelo não pode ser menor que ano fabricação.'); return; }
-  if(cars.some(x=>x.placa===c.placa && !x.venda)){ alert('Placa já cadastrada.'); return; }
+  // Checagem de placa duplicada (case-insensitive), sem mudar o que o usuário digitou
+  if(cars.some(x=>!x.venda && String(x.placa).toUpperCase() === c.placa.toUpperCase())){
+    alert('Placa já cadastrada.'); return;
+  }
   cars.unshift(c); save();
   ['iPlaca','iVersao','iCor','iKm','iValor','iFipe'].forEach(id=>$('#'+id).value='');
   $('#iMarca').selectedIndex=0; fillModelos($('#iModelo'),'');
@@ -454,7 +462,7 @@ function openCarRow(base,car){
       <div class="gastos-box">
         <div class="gx"><span class="badge">Gastos</span></div>
         <div class="gx" hidden data-form>
-          <input data-desc class="upper" placeholder="Descrição">
+          <input data-desc placeholder="Descrição">
           <input data-valor type="number" step="0.01" inputmode="decimal" placeholder="Valor (R$)">
           <input data-data type="date">
           <button class="btn tiny ok" data-save>Salvar</button>
@@ -490,7 +498,7 @@ function openCarRow(base,car){
 
   ex.querySelector('[data-addG]').onclick=()=>{ const f=ex.querySelector('[data-form]'); f.hidden=!f.hidden; const dt=f.querySelector('[data-data]'); if(!dt.value) dt.value=today(); };
   ex.querySelector('[data-cancel]').onclick=()=> ex.querySelector('[data-form]').hidden=true;
-  ex.querySelector('[data-save]').onclick=()=>{ const desc=ex.querySelector('[data-desc]').value.trim().toUpperCase()||'GASTO'; const val=+ex.querySelector('[data-valor]').value||0; const dt=ex.querySelector('[data-data]').value||today(); if(val<=0) return; car.gastos.push({desc,valor:val,data:dt,pago:null}); save(); ex.querySelector('[data-list]').innerHTML=(car.gastos||[]).map((g,i)=>gastoHTML(g,i)).join(''); const inv2=invested(car); ex.querySelector('[data-gs]').textContent=BRL(inv2-car.valorCompra); ex.querySelector('[data-inv]').textContent=BRL(inv2); ex.querySelector('[data-lucro]').textContent=BRL((car.precoAlvo||0)-inv2); ex.querySelector('[data-form]').hidden=true; ex.querySelector('[data-desc]').value=''; ex.querySelector('[data-valor]').value=''; };
+  ex.querySelector('[data-save]').onclick=()=>{ const desc=(ex.querySelector('[data-desc]').value||'GASTO').trim(); const val=+ex.querySelector('[data-valor]').value||0; const dt=ex.querySelector('[data-data]').value||today(); if(val<=0) return; car.gastos.push({desc,valor:val,data:dt,pago:null}); save(); ex.querySelector('[data-list]').innerHTML=(car.gastos||[]).map((g,i)=>gastoHTML(g,i)).join(''); const inv2=invested(car); ex.querySelector('[data-gs]').textContent=BRL(inv2-car.valorCompra); ex.querySelector('[data-inv]').textContent=BRL(inv2); ex.querySelector('[data-lucro]').textContent=BRL((car.precoAlvo||0)-inv2); ex.querySelector('[data-form]').hidden=true; ex.querySelector('[data-desc]').value=''; ex.querySelector('[data-valor]').value=''; };
   ex.querySelector('[data-list]').onclick=(e)=>{ const gi=e.target.closest('.gasto-item'); if(!gi) return; const idx=+gi.dataset.gidx;
     if(e.target.matches('[data-del]')){ if(confirm('Excluir gasto?')){ car.gastos.splice(idx,1); save(); gi.remove(); const inv2=invested(car); ex.querySelector('[data-gs]').textContent=BRL(inv2-car.valorCompra); ex.querySelector('[data-inv]').textContent=BRL(inv2); ex.querySelector('[data-lucro]').textContent=BRL((car.precoAlvo||0)-inv2);} }
     if(e.target.matches('[data-pay]')){ const sel=e.target.getAttribute('data-pay'); car.gastos[idx].pago=(sel==='sim'); save(); gi.querySelectorAll('.pill').forEach(p=>p.classList.remove('on')); if(sel==='sim') gi.querySelector('.pill.ok').classList.add('on'); else gi.querySelector('.pill.bad').classList.add('on'); }
@@ -542,21 +550,22 @@ $('#mValor').oninput=recomputeModal; $('#mComissao').oninput=recomputeModal; $('
 $('#mSalvar').onclick=()=>{
   const c=cars[sellingIndex]; if(!c) return;
   const venda={
-    comprador:$('#mComprador').value.trim().toUpperCase(),
-    vendedor:$('#mVendedor').value.trim().toUpperCase(),
+    comprador:$('#mComprador').value.trim(),
+    vendedor:$('#mVendedor').value.trim(),
     valorVenda:+($('#mValor').value||0),
     comissao:+($('#mComissao').value||0),
     data:$('#mData').value||today(),
-    obs:$('#mObs').value.trim().toUpperCase(),
+    obs:$('#mObs').value.trim(),
     doc:''
   };
-  if(!venda.comprador||!venda.valorVenda){ alert('Preencha Comprador e Valor da venda.'); return; } // vendedor e comissão opcionais
+  if(!venda.comprador||!venda.valorVenda){ alert('Preencha Comprador e Valor da venda.'); return; }
 
   if($('#mTroca').checked){
-    const tp=($('#tPlaca').value||'').toUpperCase().replace(/[^A-Z0-9]/g,''), tm=$('#tMarca').value, tmo=$('#tModelo').value, tv=$('#tVersao').value.toUpperCase(), tc=$('#tCor').value.toUpperCase(), tf=$('#tFab').value, tm2=$('#tMod').value, tkm=+($('#tKm').value||0), tval=+($('#tCompra').value||0);
+    const tp=($('#tPlaca').value||'').trim(), tm=$('#tMarca').value, tmo=$('#tModelo').value, tv=$('#tVersao').value.trim(), tc=$('#tCor').value.trim(), tf=$('#tFab').value, tm2=$('#tMod').value, tkm=+($('#tKm').value||0), tval=+($('#tCompra').value||0);
     if(tp&&tm&&tmo&&tf&&tm2&&tc&&$('#tKm').value&&$('#tCompra').value){
       venda.trade={placa:tp, carro:tm+' '+tmo, valor:tval};
-      if(!cars.some(x=>x.placa===tp && !x.venda)){
+      // evita duplicar placa independente de maiúsc/minúsc
+      if(!cars.some(x=>!x.venda && String(x.placa).toUpperCase()===tp.toUpperCase())){
         cars.unshift({id:uid(),placa:tp,marca:tm,modelo:tmo,versao:tv,cor:tc,anoFab:tf,anoMod:tm2,km:tkm,valorCompra:tval,fipe:0,gastos:[],precoAlvo:0,venda:null});
       }
     }
@@ -603,7 +612,7 @@ function openSoldRow(base,car){
       <div class="gastos-box" style="margin-top:10px">
         <div class="gx"><span class="badge">Gastos</span></div>
         <div class="gx" hidden data-form>
-          <input data-desc class="upper" placeholder="Descrição">
+          <input data-desc placeholder="Descrição">
           <input data-valor type="number" step="0.01" inputmode="decimal" placeholder="Valor (R$)">
           <input data-data type="date">
           <button class="btn tiny ok" data-save>Salvar</button>
@@ -625,7 +634,7 @@ function openSoldRow(base,car){
   // Add gasto em vendidos
   ex.querySelector('[data-cancel]').onclick=()=> ex.querySelector('[data-form]').hidden=true;
   ex.querySelector('.gx .badge').onclick=()=>{ const f=ex.querySelector('[data-form]'); f.hidden=!f.hidden; const dt=f.querySelector('[data-data]'); if(!dt.value) dt.value=today(); };
-  ex.querySelector('[data-save]').onclick=()=>{ const desc=ex.querySelector('[data-desc]').value.trim().toUpperCase()||'GASTO'; const val=+ex.querySelector('[data-valor]').value||0; const dt=ex.querySelector('[data-data]').value||today(); if(val<=0) return; car.gastos.push({desc,valor:val,data:dt,pago:null}); save(); ex.querySelector('[data-list]').innerHTML=(car.gastos||[]).map((g,i)=>gastoHTML(g,i)).join(''); const inv2=invested(car)+(+car.venda.comissao||0); const lucro2=(+car.venda.valorVenda||0)-inv2; ex.querySelector('[data-invest]').innerHTML='Investido: <b>'+BRL(inv2)+'</b>'; ex.querySelector('[data-lucro]').innerHTML='Lucro: <b>'+BRL(lucro2)+'</b>'; ex.querySelector('[data-pct]').innerHTML='Lucro (%): <b>'+ (inv2? (lucro2/inv2*100).toFixed(2):'0.00') +'%</b>'; ex.querySelector('[data-form]').hidden=true; ex.querySelector('[data-desc]').value=''; ex.querySelector('[data-valor]').value=''; };
+  ex.querySelector('[data-save]').onclick=()=>{ const desc=(ex.querySelector('[data-desc]').value||'GASTO').trim(); const val=+ex.querySelector('[data-valor]').value||0; const dt=ex.querySelector('[data-data]').value||today(); if(val<=0) return; car.gastos.push({desc,valor:val,data:dt,pago:null}); save(); ex.querySelector('[data-list]').innerHTML=(car.gastos||[]).map((g,i)=>gastoHTML(g,i)).join(''); const inv2=invested(car)+(+car.venda.comissao||0); const lucro2=(+car.venda.valorVenda||0)-inv2; ex.querySelector('[data-invest]').innerHTML='Investido: <b>'+BRL(inv2)+'</b>'; ex.querySelector('[data-lucro]').innerHTML='Lucro: <b>'+BRL(lucro2)+'</b>'; ex.querySelector('[data-pct]').innerHTML='Lucro (%): <b>'+ (inv2? (lucro2/inv2*100).toFixed(2):'0.00') +'%</b>'; ex.querySelector('[data-form]').hidden=true; ex.querySelector('[data-desc]').value=''; ex.querySelector('[data-valor]').value=''; };
 
   ex.querySelector('[data-list]').onclick=(e)=>{
     const gi=e.target.closest('.gasto-item'); if(!gi) return; const idx=+gi.dataset.gidx;
@@ -740,15 +749,15 @@ function renderNotes(){
   };
 }
 $('#btnNote').onclick=()=>{
-  const t=$('#nTitulo').value.trim().toUpperCase();
-  const o=$('#nObs').value.trim().toUpperCase();
+  const t=$('#nTitulo').value.trim();
+  const o=$('#nObs').value.trim();
   if(!t){ alert('Informe um título.'); return; }
   notes.unshift({id:uid(),titulo:t,obs:o}); saveN();
   $('#nTitulo').value=''; $('#nObs').value='';
   renderNotes();
 };
 
-/* ===== Inputs moeda para FIPE/Alvo ===== */
+/* ===== Inputs moeda (FIPE/Alvo) ===== */
 function attachCurrency(input, onChange){
   function parse(str){ const nums=str.replace(/\D/g,''); return nums ? (+nums)/100 : 0; }
   function format(n){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(n); }
