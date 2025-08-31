@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0f1220">
+<title>Gestão de Carros</title>
+<style>
+:root{
+  --bg:#0f1220; --panel:#14192b; --card:#171e33; --line:#26304a;
+  --fg:#e9eeff; --mut:#9fb0d4; --chip:#0b1120;
+  --pri:#28c9ff; --pri-ink:#00121a;
+  --ok:#22c55e; --bad:#ef4444;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
+.header{position:sticky;top:0;z-index:20;background:#0c1120;border-bottom:1px solid var(--line);padding:12px 16px;text-align:center;font-weight:800}
+.wrapper{max-width:1120px;margin:0 auto;padding:16px}
+.tabs{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;border-bottom:1px solid var(--line);padding:10px;background:#0e152a}
+.tab{appearance:none;border:1px solid var(--line);background:#1a2340;color:#eaf0ff;border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:800;min-height:40px}
+.tab.active{background:var(--pri);color:var(--pri-ink);border-color:transparent}
+.section{display:none}.section.active{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:16px 0;box-shadow:0 10px 28px rgba(0,0,0,.35)}
+.card h2,.card h3{margin:0 0 10px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px}
+input,select,textarea{flex:1;min-width:220px;background:#0b1120;color:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:16px;min-height:44px;outline:0}
+input::placeholder,textarea::placeholder{color:#7f8aa3}
+select option{background:#ffffff;color:#0b1018}
+/* tudo que tiver .upper vira maiúsculo */
+.upper{text-transform:uppercase}
+
+.btn{appearance:none;border:none;border-radius:12px;cursor:pointer;min-height:36px;padding:10px 12px;font-weight:800}
+.btn.primary{background:var(--pri);color:var(--pri-ink)}
+.btn.secondary{background:#1a2340;color:#eaf0ff;border:1px solid var(--line)}
+.btn.ok{background:var(--ok);color:#001a10}
+.btn.bad{background:var(--bad);color:#fff}
+.btn.tiny{padding:6px 10px;font-size:12px;border-radius:8px}
+.badge{display:inline-block;background:#0e152a;border:1px solid var(--line);border-radius:999px;padding:6px 10px}
+.muted{color:var(--mut);font-size:12px}
+
+/* tables */
+table{width:100%;border-collapse:separate;border-spacing:0 10px}
+thead th{font-size:11px;letter-spacing:.35px;text-transform:uppercase;color:#bac7df;text-align:left;padding:0 10px}
+tbody td{background:#0e152a;border:1px solid var(--line);padding:10px;vertical-align:top}
+tbody tr td:first-child{border-top-left-radius:12px;border-bottom-left-radius:12px}
+tbody tr td:last-child{border-top-right-radius:12px;border-bottom-right-radius:12px}
+tbody tr:hover{outline:2px solid #1b263b}
+td.right,th.right{text-align:right}
+.chip{display:inline-block;padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:var(--chip);font-family:ui-monospace, Menlo, Consolas, monospace}
+.veh{font-weight:800}
+.sub{display:block;color:var(--mut);font-size:12px;margin-top:2px}
+
+/* expand rows */
+.expand{background:#0b1120;border-top:1px solid var(--line)}
+.expand .wrap{padding:12px}
+.grid{display:grid;gap:10px}
+.grid.two{grid-template-columns:repeat(2,minmax(220px,1fr))}
+@media (max-width:820px){.grid.two{grid-template-columns:1fr}}
+.kv{display:flex;justify-content:space-between;gap:12px;background:#0f1a33;border:1px solid var(--line);border-radius:12px;padding:10px}
+.kv .val{font-weight:800}
+
+/* gastos */
+.gastos-box{margin-top:12px;border:1px dashed var(--line);border-radius:12px;background:#0f1a33}
+.gastos-box .gx{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px}
+.gastos-list{padding:8px 10px;border-top:1px solid var(--line);max-height:220px;overflow:auto}
+.gasto-item{display:flex;justify-content:space-between;gap:10px;background:#0b1120;border:1px solid var(--line);border-radius:10px;padding:8px;margin-bottom:8px}
+.gasto-item .when{opacity:.8;font-size:12px}
+
+/* PAGO toggle */
+.pill{border:1px solid var(--line);background:#1a2340;color:#eaf0ff;border-radius:999px;padding:6px 10px;font-weight:800}
+.pill.ok.on{background:var(--ok);color:#062111;border-color:transparent}
+.pill.bad.on{background:var(--bad);color:#fff;border-color:transparent}
+
+/* Documento */
+.doc{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-weight:800}
+.doc.certo{background:var(--ok);color:#062111;border-color:transparent}
+.doc.falta{background:var(--bad);color:#fff;border-color:transparent}
+
+/* Modal */
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:50}
+.modal.active{display:flex}
+.dialog{background:#0e152a;border:1px solid var(--line);border-radius:16px;max-width:980px;width:96%;padding:16px}
+.dialog h3{margin:0 0 8px}
+.x{float:right;background:transparent;border:none;color:#b6c1d4;font-size:22px;cursor:pointer}
+.months{display:flex;flex-wrap:wrap;gap:8px}
+.info-line{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+</style>
+</head>
+<body>
+  <div class="header">Gestão de Compras e Vendas de Carros</div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="add">Adicionar Carro</button>
+    <button class="tab" data-tab="calc">Calculadora</button>
+    <button class="tab" data-tab="cars">Meus Carros</button>
+    <button class="tab" data-tab="sold">Vendidos</button>
+    <button class="tab" data-tab="notes">Anotações</button>
+  </div>
+
+  <div class="wrapper">
+    <!-- ADICIONAR -->
+    <section id="add" class="section active">
+      <div class="card">
+        <h2>Adicionar Carro</h2>
+        <div class="row"><input id="iPlaca" class="upper" placeholder="Placa (ABC1D23)" autocapitalize="characters"></div>
+        <div class="row">
+          <select id="iMarca"></select>
+          <select id="iModelo" disabled><option>Selecione a marca primeiro</option></select>
+        </div>
+        <div class="row">
+          <input id="iVersao" class="upper" placeholder="Versão (LTZ, EXL...)">
+          <input id="iCor" class="upper" placeholder="Cor">
+        </div>
+        <div class="row">
+          <select id="iAnoFab"></select>
+          <select id="iAnoMod"></select>
+        </div>
+        <div class="row">
+          <input id="iKm" type="number" inputmode="numeric" placeholder="KM">
+          <input id="iValor" type="number" step="0.01" inputmode="decimal" placeholder="Valor de compra (R$)">
+        </div>
+        <div class="row">
+          <input id="iFipe" type="number" step="0.01" inputmode="decimal" placeholder="Valor FIPE (R$)">
+        </div>
+        <div class="row"><button class="btn primary" id="btnAdd">➕ Adicionar</button></div>
+        <div class="muted">Fluxo: <b>Marca → Modelo</b>. O <b>Ano do Modelo</b> não pode ser menor que o <b>Ano de Fabricação</b>.</div>
+      </div>
+    </section>
+
+    <!-- CALCULADORA -->
+    <section id="calc" class="section">
+      <div class="card">
+        <h2>Calculadora</h2>
+        <div class="row">
+          <input id="cCompra" type="number" step="0.01" inputmode="decimal" placeholder="Valor do carro (compra) R$">
+          <input id="cFipe" type="number" step="0.01" inputmode="decimal" placeholder="Valor FIPE R$">
+          <input id="cGastos" type="number" step="0.01" inputmode="decimal" placeholder="Gastos previstos R$">
+          <button class="btn primary" id="btnCalc">Calcular</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">Resultado</h3>
+        <div class="grid two">
+          <div class="kv"><b>Investimento (compra + gastos)</b><span id="rInvest" class="val">R$ 0,00</span></div>
+          <div class="kv"><b>Diferença vs FIPE</b><span id="rDiffFipe" class="val">R$ 0,00</span></div>
+          <div class="kv"><b>% abaixo/acima FIPE</b><span id="rPctFipe" class="val">0,00%</span></div>
+          <div class="kv"><b>Lucro se vender na FIPE</b><span id="rLucroFipe" class="val">R$ 0,00 (0,00%)</span></div>
+          <div class="kv"><b>Compra máxima p/ 30% (FIPE)</b><span id="rCompraMax30" class="val">R$ 0,00</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MEUS CARROS -->
+    <section id="cars" class="section">
+      <div class="card">
+        <h2>Meus Carros</h2>
+        <table>
+          <thead><tr><th>Placa</th><th>Veículo</th><th class="right">Ações</th></tr></thead>
+          <tbody id="carsTable"></tbody>
+        </table>
+        <div class="muted" style="margin-top:8px">FIPE fica bloqueada até clicar <b>Editar FIPE</b>. “Valor de venda (alvo)” calcula o lucro sozinho. Em cada gasto use <b>PAGO: Sim/Não</b>.</div>
+      </div>
+    </section>
+
+    <!-- VENDIDOS -->
+    <section id="sold" class="section">
+      <div class="card">
+        <div class="row" style="justify-content:space-between;align-items:center;margin-top:0">
+          <h2 style="margin:0">Carros Vendidos</h2>
+          <button class="btn secondary" id="btnReport">Relatório</button>
+        </div>
+        <table>
+          <thead><tr><th>Placa</th><th>Veículo</th><th class="right">Ações</th></tr></thead>
+          <tbody id="soldTable"></tbody>
+        </table>
+        <div class="muted">Em <b>Documento</b> marque <span style="color:var(--ok)">Certo</span> ou <span style="color:var(--bad)">Falta</span>. Em Vendidos você também consegue <b>lançar/editar gastos</b>.</div>
+      </div>
+    </section>
+
+    <!-- ANOTAÇÕES -->
+    <section id="notes" class="section">
+      <div class="card">
+        <h2>Anotações</h2>
+        <div class="row"><input id="nTitulo" class="upper" placeholder="Título"></div>
+        <div class="row"><textarea id="nObs" class="upper" placeholder="Observação..." rows="4"></textarea></div>
+        <div class="row"><button class="btn primary" id="btnNote">Adicionar anotação</button></div>
+      </div>
+      <div class="card">
+        <table><thead><tr><th>Título</th><th class="right">Ações</th></tr></thead><tbody id="notesTable"></tbody></table>
+      </div>
+    </section>
+  </div>
+
+  <!-- MODAL VENDA -->
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="dialog">
+      <button class="x" id="mClose" title="Fechar">×</button>
+      <h3>Venda — <span id="mTitle"></span></h3>
+      <div class="row"><span class="badge" id="mInfo"></span><span class="badge">Total investido: <b id="mInv">R$ 0,00</b></span></div>
+      <div class="card" style="padding:12px">
+        <div class="row"><input id="mComprador" class="upper" placeholder="Comprador"><input id="mVendedor" class="upper" placeholder="Vendedor (opcional)"><input id="mComissao" type="number" step="0.01" placeholder="Comissão (R$ — opcional)"></div>
+        <div class="row"><input id="mValor" type="number" step="0.01" placeholder="Valor da venda (R$)"><input id="mData" type="date"></div>
+        <div class="row"><input id="mLucro" disabled placeholder="Lucro (R$) — automático"><input id="mPct" disabled placeholder="Lucro (%) — automático"></div>
+        <div class="row"><label><input type="checkbox" id="mTroca"> Entrou carro na troca (adicionar ao estoque)</label></div>
+
+        <!-- TROCA -->
+        <div id="mTrocaBox" style="display:none">
+          <div class="row"><input id="tPlaca" class="upper" placeholder="Placa"><select id="tMarca"></select><select id="tModelo" disabled><option>Selecione a marca</option></select></div>
+          <div class="row"><input id="tVersao" class="upper" placeholder="Versão"><input id="tCor" class="upper" placeholder="Cor"></div>
+          <div class="row"><select id="tFab"></select><select id="tMod"></select></div>
+          <div class="row"><input id="tKm" type="number" placeholder="KM"><input id="tCompra" type="number" step="0.01" placeholder="Valor que entrou o carro (R$)"></div>
+          <div class="row" id="tDiffRow" style="display:none">
+            <span class="badge">Diferença do valor: <b id="tDiff">R$ 0,00</b></span>
+          </div>
+        </div>
+
+        <div class="row"><textarea id="mObs" class="upper" placeholder="Observações" rows="3"></textarea></div>
+        <div class="row" style="justify-content:flex-end"><button class="btn ok" id="mSalvar">Salvar venda</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL RELATÓRIO -->
+  <div id="report" class="modal" aria-hidden="true">
+    <div class="dialog">
+      <button class="x" id="rClose" title="Fechar">×</button>
+    <h3>Relatório de Vendas</h3>
+      <div class="card" style="padding:12px">
+        <div class="row">
+          <span class="badge">Ano</span>
+          <button class="btn secondary" data-year="2025">2025</button>
+          <button class="btn secondary" data-year="2026">2026</button>
+        </div>
+        <div class="row">
+          <span class="badge">Mês</span>
+          <div class="months" id="rMonths"></div>
+        </div>
+      </div>
+      <div class="card" style="padding:12px">
+        <div class="info-line">
+          <div class="kv"><b>Carros vendidos</b><span id="rQtd" class="val">0</span></div>
+          <div class="kv"><b>Valor bruto</b><span id="rBruto" class="val">R$ 0,00</span></div>
+          <div class="kv"><b>Lucro do mês</b><span id="rLucro" class="val">R$ 0,00</span></div>
+        </div>
+        <div style="margin-top:10px">
+          <table>
+            <thead><tr><th>Placa</th><th>Veículo</th><th class="right">Vendido (R$)</th></tr></thead>
+            <tbody id="rList"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){'use strict';
+/* ===== Helpers ===== */
+const $=(s,r)=> (r||document).querySelector(s);
+const $$=(s,r)=> Array.from((r||document).querySelectorAll(s));
+const BRL=v=> new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(+v||0);
+const INT=v=> new Intl.NumberFormat('pt-BR').format(+v||0);
+const today=()=> new Date().toISOString().slice(0,10);
+const uid=()=> Math.random().toString(36).slice(2)+Date.now().toString(36);
+const esc=s=> String(s??'').replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+const store=(()=>{try{const k='__t__';localStorage.setItem(k,'1');localStorage.removeItem(k);return localStorage;}catch(e){const m={};return{getItem:k=>m[k]||null,setItem:(k,v)=>m[k]=String(v),removeItem:k=>delete m[k]};}})();
+
+/* força maiúsculo nos inputs com .upper, inclusive colando */
+document.addEventListener('input',e=>{
+  if(e.target.classList && e.target.classList.contains('upper')){
+    const p=e.target.selectionStart;
+    e.target.value=e.target.value.toUpperCase();
+    e.target.setSelectionRange(p,p);
+  }
+});
+
+/* máscara de moeda para inputs de texto */
+function attachCurrency(input, onChange){
+  function parse(str){
+    const nums=str.replace(/\D/g,'');
+    return nums ? (+nums)/100 : 0;
+  }
+  function format(n){
+    return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(n);
+  }
+  // valor inicial
+  input.value = input.value ? format(+input.value) : '';
+  input.addEventListener('input', ()=>{
+    const val = parse(input.value);
+    input.value = val ? format(val) : '';
+    onChange(val);
+  });
+  input.addEventListener('blur', ()=>{
+    const val = parse(input.value);
+    input.value = val ? format(val) : '';
+    onChange(val);
+  });
+}
+
+/* ===== Estado ===== */
+const KEY='cars_clean_v18', KEYN='notes_clean_v18';
+let cars=JSON.parse(store.getItem(KEY)||'[]');
+let notes=JSON.parse(store.getItem(KEYN)||'[]');
+const save=()=>{try{store.setItem(KEY,JSON.stringify(cars));}catch(e){}};
+const saveN=()=>{try{store.setItem(KEYN,JSON.stringify(notes));}catch(e){}};
+
+/* ===== Tabs ===== */
+function setTab(id){ $$('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===id)); $$('.section').forEach(s=>s.classList.toggle('active',s.id===id)); if(id==='cars') renderCars(); if(id==='sold') renderSold(); if(id==='notes') renderNotes(); }
+$$('.tab').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+
+/* ===== Catálogo ===== */
+const CATALOG={
+ 'Chevrolet':['Onix','Onix Plus','Tracker','Spin','S10','Montana','Cruze','Equinox','Trailblazer'],
+ 'Volkswagen':['Gol','Polo','Virtus','Nivus','T-Cross','Taos','Saveiro','Amarok','Jetta'],
+ 'Fiat':['Mobi','Argo','Cronos','Pulse','Strada','Toro','Fastback','Fiorino'],
+ 'Toyota':['Yaris','Yaris Sedan','Corolla','Corolla Cross','Hilux','SW4'],
+ 'Hyundai':['HB20','HB20S','Creta','Tucson','Santa Fe'],
+ 'Honda':['City','City Hatch','HR-V','Civic','Accord'],
+ 'Renault':['Kwid','Sandero','Logan','Stepway','Duster','Oroch','Captur'],
+ 'Nissan':['Versa','Kicks','Frontier','Sentra'],
+ 'Jeep':['Renegade','Compass','Commander','Wrangler'],
+ 'Peugeot':['208','2008','3008','408','Partner'],
+ 'Citroën':['C3','C4 Cactus','C3 Aircross','Jumpy'],
+ 'Mitsubishi':['L200 Triton','Pajero','Outlander','ASX'],
+ 'Kia':['Sportage','Cerato','Sorento','Soul','Picanto'],
+ 'Caoa Chery':['Tiggo 3x','Tiggo 5x','Tiggo 7','Tiggo 8','Arrizo 6'],
+ 'BYD':['Dolphin','Dolphin Mini','Yuan Plus','Song Plus','Seal'],
+ 'GWM':['Haval H6','Haval H6 GT','Ora 03'],
+ 'BMW':['Série 1','Série 3','X1','X3','X5'],
+ 'Audi':['A3','A4','Q3','Q5','Q7'],
+ 'Mercedes-Benz':['Classe A','Classe C','GLA','GLC'],
+ 'Volvo':['XC40','XC60','XC90','C40'],
+ 'Land Rover':['Evoque','Discovery Sport','Range Rover Sport','Discovery 4','Defender'],
+ 'RAM':['1500','2500','3500'],
+ 'MINI':['Cooper Hatch','Countryman']
+};
+function fillYears(sel,ph){ sel.innerHTML='<option value=\"\">'+ph+'</option>'+Array.from({length:28},(_,i)=>2005+i).map(y=>`<option>${y}</option>`).join(''); }
+function fillMarcas(sel){ sel.innerHTML='<option value=\"\">Marca</option>'+Object.keys(CATALOG).map(m=>`<option>${m}</option>`).join(''); }
+function fillModelos(sel,marca,ph='Modelo'){ if(!marca){ sel.innerHTML='<option>Selecione a marca primeiro</option>'; sel.disabled=true; return;} sel.disabled=false; sel.innerHTML='<option value=\"\">'+ph+'</option>'+CATALOG[marca].map(m=>`<option>${m}</option>`).join(''); }
+
+/* ===== Calculadora ===== */
+function calc(){
+  const compra=+($('#cCompra').value||0), fipe=+($('#cFipe').value||0), gastos=+($('#cGastos').value||0);
+  const invest=compra+gastos;
+  const diff=fipe-invest;
+  const pct=fipe?((fipe-invest)/fipe*100):0;
+  const lucro=fipe-invest, pctL=invest? (lucro/invest*100):0;
+  const compraMax30 = Math.max(0, (fipe/1.30) - gastos);
+  $('#rInvest').textContent=BRL(invest);
+  $('#rDiffFipe').textContent=BRL(diff);
+  $('#rPctFipe').textContent=pct.toFixed(2).replace('.',',')+'%';
+  $('#rLucroFipe').textContent=BRL(lucro)+' ('+pctL.toFixed(2).replace('.',',')+'%)';
+  $('#rCompraMax30').textContent=BRL(compraMax30);
+}
+$('#btnCalc').onclick=calc; ['#cCompra','#cFipe','#cGastos'].forEach(s=>($(s).oninput=calc));
+
+/* ===== Adicionar ===== */
+$('#btnAdd').onclick=()=>{
+  const c={
+    id:uid(),
+    placa:($('#iPlaca').value||'').toUpperCase().replace(/[^A-Z0-9]/g,''),
+    marca:$('#iMarca').value, modelo:$('#iModelo').value,
+    versao:$('#iVersao').value.toUpperCase(), cor:$('#iCor').value.toUpperCase(),
+    anoFab:$('#iAnoFab').value, anoMod:$('#iAnoMod').value,
+    km:+($('#iKm').value||0), valorCompra:+($('#iValor').value||0),
+    fipe:+($('#iFipe').value||0),
+    gastos:[], precoAlvo:0, venda:null
+  };
+  if(!c.placa||!c.marca||!c.modelo||!c.anoFab||!c.anoMod||!$('#iKm').value||!$('#iValor').value||!c.cor){ alert('Preencha todos os campos.'); return;}
+  if(+c.anoMod < +c.anoFab){ alert('Ano modelo não pode ser menor que ano fabricação.'); return; }
+  if(cars.some(x=>x.placa===c.placa && !x.venda)){ alert('Placa já cadastrada.'); return; }
+  cars.unshift(c); save();
+  ['iPlaca','iVersao','iCor','iKm','iValor','iFipe'].forEach(id=>$('#'+id).value='');
+  $('#iMarca').selectedIndex=0; fillModelos($('#iModelo'),'');
+  $('#iAnoFab').selectedIndex=0; $('#iAnoMod').selectedIndex=0;
+  setTab('cars');
+};
+
+/* ===== Util ===== */
+const invested = car => car.valorCompra + (car.gastos||[]).reduce((s,g)=>s+(+g.valor||0),0);
+const gastoHTML = (g,i) => `
+  <div class="gasto-item" data-gidx="${i}">
+    <div><div><b>${esc(g.desc||'Gasto')}</b></div><div class="when">${esc(g.data||'')}</div></div>
+    <div class="row" style="align-items:center;gap:8px">
+      <span class="muted">PAGO:</span>
+      <button class="pill ok ${g.pago?'on':''}" data-pay="sim">Sim</button>
+      <button class="pill bad ${g.pago===false?'on':''}" data-pay="nao">Não</button>
+      <b>${BRL(g.valor)}</b>
+      <button class="btn tiny bad" data-del>🗑️</button>
+    </div>
+  </div>`;
+
+/* ===== Meus Carros ===== */
+function renderCars(){
+  const tb=$('#carsTable'); tb.innerHTML='';
+  cars.filter(c=>!c.venda).forEach(c=>{
+    const tr=document.createElement('tr'); tr.dataset.id=c.id;
+    tr.innerHTML=`<td><span class="chip">${esc(c.placa)}</span></td>
+      <td><span class="veh">${esc(c.marca)} ${esc(c.modelo)}</span>${c.versao?`<span class="sub">${esc(c.versao)}</span>`:''}</td>
+      <td class="right"><button class="btn secondary" data-exp>+</button></td>`;
+    tb.appendChild(tr);
+  });
+}
+function openCarRow(base,car){
+  const next=base.nextElementSibling; if(next?.classList.contains('expand')){ next.remove(); return;}
+  const ex=document.createElement('tr'); ex.className='expand'; const td=document.createElement('td'); td.colSpan=3;
+  const inv=invested(car);
+  td.innerHTML=`
+    <div class="wrap">
+      <div class="grid two">
+        <div class="kv"><b>Ano</b><span class="val">${esc(car.anoFab)}/${esc(car.anoMod)}</span></div>
+        <div class="kv"><b>Cor</b><span class="val">${esc(car.cor)}</span></div>
+        <div class="kv"><b>KM</b><span class="val">${INT(car.km)}</span></div>
+        <div class="kv"><b>Compra</b><span class="val">${BRL(car.valorCompra)}</span></div>
+        <div class="kv"><b>Gastos</b><span class="val" data-gs>${BRL(inv-car.valorCompra)}</span></div>
+        <div class="kv"><b>Total investido</b><span class="val" data-inv>${BRL(inv)}</span></div>
+
+        <!-- FIPE com máscara de moeda e botão para liberar -->
+        <div class="kv">
+          <b>FIPE</b>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="text" value="${car.fipe||''}" data-fipe style="max-width:220px" disabled>
+            <button class="btn tiny secondary" data-fipe-edit>Editar FIPE</button>
+          </div>
+        </div>
+
+        <div class="kv" style="grid-column:1/-1">
+          <div style="display:flex;gap:8px;align-items:center">
+            <b>Valor de venda (alvo)</b>
+            <input type="text" value="${car.precoAlvo||''}" data-alvo style="max-width:220px">
+          </div>
+        </div>
+        <div class="kv"><b>Lucro no alvo</b><span class="val" data-lucro>${BRL((car.precoAlvo||0)-inv)}</span></div>
+      </div>
+      <div class="row" style="justify-content:flex-end;margin-top:8px">
+        <button class="btn secondary" data-addG>+ Gasto</button>
+        <button class="btn ok" data-sell>Venda</button>
+        <button class="btn bad" data-delcar>Excluir</button>
+      </div>
+      <div class="gastos-box">
+        <div class="gx"><span class="badge">Gastos</span></div>
+        <div class="gx" hidden data-form>
+          <input data-desc class="upper" placeholder="Descrição">
+          <input data-valor type="number" step="0.01" inputmode="decimal" placeholder="Valor (R$)">
+          <input data-data type="date">
+          <button class="btn tiny ok" data-save>Salvar</button>
+          <button class="btn tiny bad" data-cancel>Cancelar</button>
+        </div>
+        <div class="gastos-list" data-list>${(car.gastos||[]).map((g,i)=>gastoHTML(g,i)).join('')||'<div class="muted">Sem gastos.</div>'}</div>
+      </div>
+    </div>`;
+  ex.appendChild(td); base.parentNode.insertBefore(ex,base.nextSibling);
+  const d=ex.querySelector('[data-data]'); if(d&&!d.value) d.value=today();
+
+  // máscara de moeda para FIPE (libera ao clicar)
+  const fipeInput = ex.querySelector('[data-fipe]');
+  const fipeBtn   = ex.querySelector('[data-fipe-edit]');
+  fipeBtn.onclick = () => {
+    const enable = fipeInput.disabled;
+    fipeInput.disabled = !enable;
+    fipeBtn.textContent = enable ? 'Concluir' : 'Editar FIPE';
+    if(enable){
+      attachCurrency(fipeInput,(val)=>{ car.fipe = +val||0; });
+      fipeInput.focus();
+    }else{
+      // garante salvar quando concluir
+      const val = fipeInput.value.replace(/\D/g,''); car.fipe = val? (+val)/100 : 0; save();
+    }
+  };
+
+  // máscara de moeda para ALVO (sempre ativo)
+  const alvoInput = ex.querySelector('[data-alvo]');
+  attachCurrency(alvoInput,(val)=>{
+    car.precoAlvo=+val||0; save();
+    ex.querySelector('[data-lucro]').textContent=BRL((car.precoAlvo||0)-invested(car));
+  });
+
+  ex.querySelector('[data-addG]').onclick=()=>{ const f=ex.querySelector('[data-form]'); f.hidden=!f.hidden; const dt=f.querySelector('[data-data]'); if(!dt.value) dt.value=today(); };
+  ex.querySelector('[data-cancel]').onclick=()=> ex.querySelector('[data-form]').hidden=true;
+  ex.querySelector('[data-save]').onclick=()=>{ const desc=ex.querySelector('[data-desc]').value.trim().toUpperCase()||'GASTO'; const val=+ex.querySelector('[data-valor]').value||0; const dt=ex.querySelector('[data-data]').value||today(); if(val<=0) return; car.gastos.push({desc,valor:val,data:dt,pago:null}); save(); ex.querySelector('[data-list]').innerHTML=(car.gastos||[]).map((g,i)=>gastoHTML(g,i)).join(''); const inv2=invested(car); ex.querySelector('[data-gs]').textContent=BRL(inv2-car.valorCompra); ex.querySelector('[data-inv]').textContent=BRL(inv2); ex.querySelector('[data-lucro]').textContent=BRL((car.precoAlvo||0)-inv2); ex.querySelector('[data-form]').hidden=true; ex.querySelector('[data-desc]').value=''; ex.querySelector('[data-valor]').value=''; };
+  ex.querySelector('[data-list]').onclick=(e)=>{ const gi=e.target.closest('.gasto-item'); if(!gi) return; const idx=+gi.dataset.gidx;
+    if(e.target.matches('[data-del]')){ if(confirm('Excluir gasto?')){ car.gastos.splice(idx,1); save(); gi.remove(); const inv2=invested(car); ex.querySelector('[data-gs]').textContent=BRL(inv2-car.valorCompra); ex.querySelector('[data-inv]').textContent=BRL(inv2); ex.querySelector('[data-lucro]').textContent=BRL((car.precoAlvo||0)-inv2);} }
+    if(e.target.matches('[data-pay]')){ const sel=e.target.getAttribute('data-pay'); car.gastos[idx].pago=(sel==='sim'); save(); gi.querySelectorAll('.pill').forEach(p=>p.classList.remove('on')); if(sel==='sim') gi.querySelector('.pill.ok').classList.add('on'); else gi.querySelector('.pill.bad').classList.add('on'); }
+  };
+  ex.querySelector('[data-delcar]').onclick=()=>{ if(confirm('Excluir carro?')){ cars=cars.filter(x=>x.id!==car.id); save(); renderCars(); } };
+  ex.querySelector('[data-sell]').onclick=()=>openSell(car.id);
+}
+$('#carsTable').onclick=(e)=>{ const tr=e.target.closest('tr'); if(!tr) return; if(e.target.matches('[data-exp]')){ const car=cars.find(x=>x.id===tr.dataset.id); openCarRow(tr,car);} };
+
+/* ===== Modal VENDA ===== */
+let sellingIndex=null;
+function openSell(id){
+  sellingIndex=cars.findIndex(x=>x.id===id); if(sellingIndex<0) return;
+  const c=cars[sellingIndex]; const inv=invested(c);
+  $('#mTitle').textContent=c.placa+' — '+c.marca+' '+c.modelo;
+  $('#mInfo').textContent=(c.versao?c.versao+' • ':'')+c.anoFab+'/'+c.anoMod+' • '+c.cor;
+  $('#mInv').textContent=BRL(inv);
+  ['#mComprador','#mVendedor','#mComissao','#mValor','#mObs','#mLucro','#mPct','#tPlaca','#tVersao','#tCor','#tKm','#tCompra'].forEach(s=>$(s).value='');
+  $('#mData').value=today();
+  $('#mTroca').checked=false; $('#mTrocaBox').style.display='none'; $('#tDiffRow').style.display='none';
+  $('#modal').classList.add('active');
+}
+$('#mClose').onclick=()=>$('#modal').classList.remove('active');
+$('#mTroca').onchange=function(){ $('#mTrocaBox').style.display=this.checked?'block':'none'; if(this.checked){ fillMarcas($('#tMarca')); fillModelos($('#tModelo'),''); fillYears($('#tFab'),'Ano Fab.'); fillYears($('#tMod'),'Ano Mod.'); $('#tMarca').onchange=()=>fillModelos($('#tModelo'),$('#tMarca').value); } };
+function recomputeModal(){
+  const c=cars[sellingIndex]; if(!c) return;
+  const inv=invested(c)+(+$('#mComissao').value||0);
+  const lucro=(+$('#mValor').value||0)-inv;
+  $('#mLucro').value=BRL(lucro);
+  $('#mPct').value=(inv? (lucro/inv*100):0).toFixed(2)+'%';
+  if($('#mTroca').checked){
+    const tradeVal=+($('#tCompra').value||0);
+    const sellVal=+($('#mValor').value||0);
+    if(tradeVal>0 && sellVal>0){
+      $('#tDiff').textContent=BRL(sellVal - tradeVal);
+      $('#tDiffRow').style.display='flex';
+    }else $('#tDiffRow').style.display='none';
+  }else $('#tDiffRow').style.display='none';
+}
+$('#mValor').oninput=recomputeModal; $('#mComissao').oninput=recomputeModal; $('#tCompra').oninput=recomputeModal;
+
+$('#mSalvar').onclick=()=>{
+  const c=cars[sellingIndex]; if(!c) return;
+  const venda={ comprador:$('#mComprador').value.trim().toUpperCase(), vendedor:$('#mVendedor').value.trim().toUpperCase(), valorVenda:+($('#mValor').value||0), comissao:+($('#mComissao').value||0), data:$('#mData').value||today(), obs:$('#mObs').value.trim().toUpperCase(), doc:'' };
+  if(!venda.comprador||!venda.valorVenda){ alert('Preencha Comprador e Valor da venda.'); return; } // vendedor e comissão opcionais
+
+  if($('#mTroca').checked){
+    const tp=($('#tPlaca').value||'').toUpperCase().replace(/[^A-Z0-9]/g,''), tm=$('#tMarca').value, tmo=$('#tModelo').value, tv=$('#tVersao').value.toUpperCase(), tc=$('#tCor').value.toUpperCase(), tf=$('#tFab').value, tm2=$('#tMod').value, tkm=+($('#tKm').value||0), tval=+($('#tCompra').value||0);
+    if(tp&&tm&&tmo&&tf&&tm2&&tc&&$('#tKm').value&&$('#tCompra').value){
+      venda.trade={placa:tp, carro:tm+' '+tmo, valor:tval};
+      if(!cars.some(x=>x.placa===tp && !x.venda)){
+        cars.unshift({id:uid(),placa:tp,marca:tm,modelo:tmo,versao:tv,cor:tc,anoFab:tf,anoMod:tm2,km:tkm,valorCompra:tval,fipe:0,gastos:[],precoAlvo:0,venda:null});
+      }
+    }
+  }
+  c.venda=venda;
+  save(); $('#modal').classList.remove('active'); renderCars(); setTab('sold');
+};
+
+/* ===== Vendidos ===== */
+function renderSold(){ const tb=$('#soldTable'); tb.innerHTML=''; cars.filter(c=>c.venda).forEach(c=>{ const tr=document.createElement('tr'); tr.dataset.id=c.id; tr.innerHTML=`<td><span class="chip">${esc(c.placa)}</span></td><td><span class="veh">${esc(c.marca)} ${esc(c.modelo)}</span>${c.versao?`<span class="sub">${esc(c.versao)}</span>`:''}</td><td class="right"><button class="btn secondary" data-exp>+</button> <button class="btn bad" data-del>🗑️</button></td>`; tb.appendChild(tr); }); }
+function openSoldRow(base,car){
+  const next=base.nextElementSibling; if(next?.classList.contains('expand')){ next.remove(); return; }
+  const v=car.venda; const inv=invested(car)+(+v.comissao||0); const lucro=(+v.valorVenda||0)-inv; const pct=inv? (lucro/inv*100):0;
+  const ex=document.createElement('tr'); ex.className='expand'; const td=document.createElement('td'); td.colSpan=3;
+  const tradeBadge = v.trade ? `
+      <span class="badge">Entrou: <b>${esc(v.trade.carro)} ${esc(v.trade.placa)}</b> (${BRL(v.trade.valor)})</span>
+      <span class="badge">Diferença do valor: <b>${BRL((+v.valorVenda||0) - (+v.trade.valor||0))}</b></span>` : '';
+  td.innerHTML=`<div class="wrap">
+      <div class="row" style="margin-bottom:8px">
+        <span class="badge">Relatório</span>
+        <span class="badge" data-invest>Investido: <b>${BRL(inv)}</b></span>
+        <span class="badge" data-lucro>Lucro: <b>${BRL(lucro)}</b></span>
+        <span class="badge" data-pct>Lucro (%): <b>${pct.toFixed(2)}%</b></span>
+        <span class="badge">Vendido: <b>${BRL(v.valorVenda)}</b></span>
+        ${tradeBadge}
+      </div>
+      <div class="grid two">
+        <div class="kv"><b>Comprador</b><span>${esc(v.comprador)}</span></div>
+        <div class="kv"><b>Vendedor</b><span>${esc(v.vendedor||'—')}</span></div>
+        <div class="kv"><b>Data</b><span>${esc(v.data)}</span></div>
+        <div class="kv"><b>Comissão</b><span>${BRL(v.comissao||0)}</span></div>
+        <div class="kv" style="grid-column:1/-1"><b>Observações</b><span>${esc(v.obs)}</span></div>
+      </div>
+
+      <div class="gastos-box" style="margin-top:10px">
+        <div class="gx"><span class="badge">Gastos</span></div>
+        <div class="gx" hidden data-form>
+          <input data-desc class="upper" placeholder="Descrição">
+          <input data-valor type="number" step="0.01" inputmode="decimal" placeholder="Valor (R$)">
+          <input data-data type="date">
+          <button class="btn tiny ok" data-save>Salvar</button>
+          <button class="btn tiny bad" data-cancel>Cancelar</button>
+        </div>
+        <div class="gastos-list" data-list>${(car.gastos||[]).map((g,i)=>gastoHTML(g,i)).join('')||'<div class="muted">Sem gastos.</div>'}</div>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <span class="doc" data-doc>${v.doc==='certo'?'Certo':(v.doc==='falta'?'Falta':'—')}</span>
+        <span class="muted">Documento:</span>
+        <button class="btn tiny ok" data-docset="certo">✔️ Certo</button>
+        <button class="btn tiny bad" data-docset="falta">❗ Falta</button>
+        <button class="btn tiny secondary" data-docset="clear">Limpar</button>
+      </div>
+    </div>`;
+  ex.appendChild(td); base.parentNode.insertBefore(ex,base.nextSibling);
+  const d=ex.querySelector('[data-data]'); if(d&&!d.value) d.value=today();
+
+  // Adicionar gasto aqui também
+  ex.querySelector('[data-cancel]').onclick=()=> ex.querySelector('[data-form]').hidden=true;
+  ex.querySelector('.gx .badge').onclick=()=>{ const f=ex.querySelector('[data-form]'); f.hidden=!f.hidden; const dt=f.querySelector('[data-data]'); if(!dt.value) dt.value=today(); };
+  ex.querySelector('[data-save]').onclick=()=>{ const desc=ex.querySelector('[data-desc]').value.trim().toUpperCase()||'GASTO'; const val=+ex.querySelector('[data-valor]').value||0; const dt=ex.querySelector('[data-data]').value||today(); if(val<=0) return; car.gastos.push({desc,valor:val,data:dt,pago:null}); save(); ex.querySelector('[data-list]').innerHTML=(car.gastos||[]).map((g,i)=>gastoHTML(g,i)).join(''); const inv2=invested(car)+(+car.venda.comissao||0); const lucro2=(+car.venda.valorVenda||0)-inv2; ex.querySelector('[data-invest]').innerHTML='Investido: <b>'+BRL(inv2)+'</b>'; ex.querySelector('[data-lucro]').innerHTML='Lucro: <b>'+BRL(lucro2)+'</b>'; ex.querySelector('[data-pct]').innerHTML='Lucro (%): <b>'+ (inv2? (lucro2/inv2*100).toFixed(2):'0.00') +'%</b>'; ex.querySelector('[data-form]').hidden=true; ex.querySelector('[data-desc]').value=''; ex.querySelector('[data-valor]').value=''; };
+
+  ex.querySelector('[data-list]').onclick=(e)=>{ const gi=e.target.closest('.gasto-item'); if(!gi) return; const idx=+gi.dataset.gidx;
+    if(e.target.matches('[data-del]')){ if(confirm('Excluir gasto?')){ car.gastos.splice(idx,1); save(); gi.remove(); const inv2=invested(car)+(+car.venda.comissao||0); const lucro2=(+car.venda.valorVenda||0)-inv2; ex.querySelector('[data-invest]').innerHTML='Investido: <b>'+BRL(inv2)+'</b>'; ex.querySelector('[data-lucro]').innerHTML='Lucro: <b>'+BRL(lucro2)+'</b>'; ex.querySelector('[data-pct]').innerHTML='Lucro (%): <b>'+ (inv2? (lucro2/inv2*100).toFixed(2):'0.00') +'%</b>'; } }
+    if(e.target.matches('[data-pay]')){ const sel=e.target.getAttribute('data-pay'); car.gastos[idx].pago=(sel==='sim'); save(); gi.querySelectorAll('.pill').forEach(p=>p.classList.remove('on')); if(sel==='sim') gi.querySelector('.pill.ok').classList.add('on'); else gi.querySelector('.pill.bad').classList.add('on'); }
+  };
+
+  ex.querySelector('[data-docset="certo"]').onclick=()=>{ car.venda.doc='certo'; save(); base.click(); openSoldRow(base,car); };
+  ex.querySelector('[data-docset="falta"]').onclick=()=>{ car.venda.doc='falta'; save(); base.click(); openSoldRow(base,car); };
+  ex.querySelector('[data-docset="clear"]').onclick=()=>{ delete car.venda.doc; save(); base.click(); openSoldRow(base,car); };
+}
+$('#soldTable').onclick=(e)=>{ const tr=e.target.closest('tr'); if(!tr) return; const car=cars.find(x=>x.id===tr.dataset.id); if(e.target.matches('[data-del]')){ if(confirm('Excluir carro vendido?')){ cars=cars.filter(x=>x.id!==car.id); save(); renderSold(); } return; } if(e.target.matches('[data-exp]')) openSoldRow(tr,car); };
+$('#btnReport').onclick=()=>openReport();
+
+/* ===== Relatório ===== */
+const MONTHS=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+let rYear=2025, rMonth=1;
+function openReport(){
+  $('#report').classList.add('active');
+  const now=new Date(); const y=now.getFullYear(); if(y===2025||y===2026){ rYear=y; rMonth=now.getMonth()+1; }
+  renderYearButtons(); renderMonths(); renderReport();
+}
+$('#rClose').onclick=()=>$('#report').classList.remove('active');
+function renderYearButtons(){
+  $$('#report [data-year]').forEach(b=>{
+    b.classList.toggle('primary', +b.dataset.year===rYear);
+    b.classList.toggle('secondary', +b.dataset.year!==rYear);
+    b.onclick=()=>{ rYear=+b.dataset.year; renderYearButtons(); renderMonths(); rMonth=1; renderReport(); };
+  });
+}
+function monthCounts(year){
+  const map=new Array(12).fill(0);
+  cars.filter(c=>c.venda && c.venda.data).forEach(c=>{
+    const d=new Date(c.venda.data);
+    if(d.getFullYear()===year){ map[d.getMonth()]++; }
+  });
+  return map;
+}
+function renderMonths(){
+  const cont=$('#rMonths'); cont.innerHTML='';
+  const counts=monthCounts(rYear);
+  for(let i=1;i<=12;i++){
+    const b=document.createElement('button');
+    b.className='btn secondary';
+    b.textContent=MONTHS[i-1]+' ('+counts[i-1]+')';
+    if(i===rMonth) b.classList.add('primary'), b.classList.remove('secondary');
+    b.onclick=()=>{ rMonth=i; renderMonths(); renderReport(); };
+    cont.appendChild(b);
+  }
+}
+function renderReport(){
+  const list=$('#rList'); list.innerHTML='';
+  let qtd=0, bruto=0, lucro=0;
+  cars.filter(c=>c.venda && c.venda.data).forEach(c=>{
+    const v=c.venda; const d=new Date(v.data);
+    if(d.getFullYear()===rYear && (d.getMonth()+1)===rMonth){
+      qtd++; bruto+=(+v.valorVenda||0);
+      const inv = c.valorCompra + (c.gastos||[]).reduce((s,g)=>s+(+g.valor||0),0) + (+v.comissao||0);
+      lucro += (+v.valorVenda||0) - inv;
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td><span class="chip">${esc(c.placa)}</span></td><td><span class="veh">${esc(c.marca)} ${esc(c.modelo)}</span></td><td class="right">${BRL(v.valorVenda||0)}</td>`;
+      list.appendChild(tr);
+    }
+  });
+  $('#rQtd').textContent=qtd; $('#rBruto').textContent=BRL(bruto); $('#rLucro').textContent=BRL(lucro);
+}
+
+/* ===== Notas ===== */
+function renderNotes(){ const tb=$('#notesTable'); tb.innerHTML=''; notes.forEach(n=>{ const tr=document.createElement('tr'); tr.dataset.id=n.id; tr.innerHTML=`<td><b>${esc(n.titulo)}</b></td><td class="right"><button class="btn secondary" data-exp>+</button> <button class="btn bad" data-del>🗑️</button></td>`; tb.appendChild(tr); }); tb.onclick=(e)=>{ const row=e.target.closest('tr'); if(!row) return; const idx=notes.findIndex(x=>x.id===row.dataset.id); if(idx<0) return; if(e.target.matches('[data-del]')){ if(confirm('Excluir anotação?')){ notes.splice(idx,1); saveN(); renderNotes(); } return; } if(e.target.matches('[data-exp]')){ const next=row.nextElementSibling; if(next?.classList.contains('expand')){ next.remove(); return; } const det=document.createElement('tr'); det.className='expand'; const td=document.createElement('td'); td.colSpan=2; td.innerHTML=`<div class="wrap"><div class="kv" style="justify-content:flex-start"><b>Observação</b></div><div class="kv"><span>${esc(notes[idx].obs||'').replace(/\n/g,'<br>')}</span></div></div>`; det.appendChild(td); row.parentNode.insertBefore(det,row.nextSibling); } }; }
+$('#btnNote').onclick=()=>{ const t=$('#nTitulo').value.trim().toUpperCase(); const o=$('#nObs').value.trim().toUpperCase(); if(!t){ alert('Informe um título.'); return; } notes.unshift({id:uid(),titulo:t,obs:o}); saveN(); $('#nTitulo').value=''; $('#nObs').value=''; renderNotes(); };
+
+/* ===== Init ===== */
+fillMarcas($('#iMarca')); fillModelos($('#iModelo'),''); fillYears($('#iAnoFab'),'Ano fabricação'); fillYears($('#iAnoMod'),'Ano modelo'); $('#iMarca').onchange=()=>fillModelos($('#iModelo'),$('#iMarca').value);
+renderCars(); renderSold();
+})();
+</script>
+</body>
+</html>
